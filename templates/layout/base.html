@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html class="no-js" lang="{{ locale_name }}">
+    <head>
+        <title>{{ head.title }}</title>
+        {{{ resourceHints }}}
+        {{{ head.meta_tags }}}
+        {{{ head.config }}}
+        {{#block "head"}} {{/block}}
+        
+        
+        <!-- BEGIN Preloading first images -->
+        
+        {{#if product.main_image}}
+        	<link rel="preload" href="{{getImage product.main_image 'product_size' (cdn theme_settings.default_image_product)}}" as="image">
+        {{/if}}
+        
+        {{#if category.products.[0].image}}
+        	<link rel="preload" href="{{getImage category.products.[0].image 'productgallery_size' (cdn theme_settings.default_image_product)}}" as="image">
+        {{/if}}
+        
+        {{#if brand.products.[0].image}}
+        	<link rel="preload" href="{{getImage brand.products.[0].image 'productgallery_size' (cdn theme_settings.default_image_product)}}" imagesrcset="{{getImageSrcset brand.products.[0].image use_default_sizes=true}}" as="image">
+        {{/if}}
+        
+        {{#if carousel.slides.[0].stencil_image}}
+        	<link rel="preload" href="{{getImageSrcset carousel.slides.[0].stencil_image 1x=(default '1280w' '160w') }}" imagesrcset="{{getImageSrcset carousel.slides.[0].stencil_image use_default_sizes=true}}" as="image">
+        {{/if}}
+        
+        {{#if settings.request.absolute_path '===' '/'}}
+	        {{#unless theme_settings.hide_shopbycategory}}
+		        {{#if theme_settings.firstcategory_image}}
+			        <link rel="preload" href="{{theme_settings.firstcategory_image}}" as="image">
+		        {{/if}}
+	        {{/unless}}
+        {{/if}}
+        
+        <!-- END Preloading first images -->
+
+        <link href="{{ head.favicon }}" rel="shortcut icon">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+
+        <!-- ICOMOON LINKS START -->
+        <style type="text/css">
+            @font-face {
+                font-family: 'icomoon';
+                src:  url('{{cdn 'assets/fonts/icomoon.eot?pdewnu'}}');
+                src:  url('{{cdn 'assets/fonts/icomoon.eot?pdewnu#iefix'}}') format('embedded-opentype'),
+                      url('{{cdn 'assets/fonts/icomoon.ttf?pdewnu'}}') format('truetype'),
+                      url('{{cdn 'assets/fonts/icomoon.woff?pdewnu'}}') format('woff'),
+                      url('{{cdn 'assets/fonts/icomoon.svg?pdewnu#icomoon'}}') format('svg');
+                font-weight: normal;
+                font-style: normal;
+                font-display: block;
+            }
+        </style>
+        <!-- ICOMOON LINKS END -->
+
+        <script>
+            {{!-- Change document class from no-js to js so we can detect this in css --}}
+            document.documentElement.className = document.documentElement.className.replace('no-js', 'js'); 
+        </script>
+
+        {{> components/common/polyfill-script }}
+
+        {{!-- Load Lazysizes script ASAP so images will appear --}}
+        <script>
+            {{!-- Only load visible elements until the onload event fires, after which preload nearby elements. --}}
+            window.lazySizesConfig = window.lazySizesConfig || {};
+            window.lazySizesConfig.loadMode = 1;
+        </script>
+        <script async src="{{cdn 'assets/dist/theme-bundle.head_async.js' resourceHint='preload' as='script'}}"></script>
+
+        {{ getFontsCollection }}
+        
+        {{{stylesheet '/assets/css/theme.css'}}}
+
+        {{{head.scripts}}}
+
+        {{~inject 'showAdminBar' theme_settings.show-admin-bar}}
+        {{~inject 'genericError' (lang 'common.generic_error')}}
+        {{~inject 'maintenanceModeSettings' settings.maintenance}}
+        {{~inject 'adminBarLanguage' (langJson 'admin')}}
+        {{~inject 'urls' urls}}
+        {{~inject 'secureBaseUrl' settings.secure_base_url}}
+        {{~inject 'cartId' cart_id}}
+        {{~inject 'channelId' settings.channel_id}}
+        {{~inject 'template' template}}
+        {{#if template_file '==' 'pages/cart'}}
+            <meta name="robots" content="noindex">
+            <meta name="googlebot" content="noindex">
+        {{/if}}
+        {{#if template_file '==' 'pages/auth/login'}}
+            <meta name="robots" content="noindex">
+            <meta name="googlebot" content="noindex">
+        {{/if}}
+        {{#if template_file '==' 'pages/checkout'}}
+            <meta name="robots" content="noindex">
+            <meta name="googlebot" content="noindex">
+        {{/if}}
+        <link rel="preload" as="image" href="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" imagesrcset="https://cdn11.bigcommerce.com/s-7wjguu0pvo/images/stencil/original/image-manager/scc-flooring-category-528x235.jpg">
+    </head>
+    <body class="{{theme_settings.current-style}} {{page_type}}">
+        
+        <svg data-src="{{cdn 'img/icon-sprite.svg'}}" class="icons-svg-sprite"></svg>
+
+        {{> components/elevate/header }}
+        {{> components/elevate/body }}
+        {{> components/elevate/footer }}
+
+        <script>window.__webpack_public_path__ = "{{cdn 'assets/dist/'}}";</script>
+        <script src="{{cdn 'assets/dist/theme-bundle.main.js' resourceHint='preload' as='script'}}"></script>
+        <script>
+            {{!-- Exported in app.js --}}
+            window.stencilBootstrap("{{page_type}}", {{jsContext}}).load();
+        </script>
+
+        {{{footer.scripts}}}
+        
+        <script>
+            document.querySelectorAll(".navPage-subMenu").forEach(menu => {
+                if (window.innerWidth <= 800) {
+                    menu.classList.add("is-open")
+                } else {
+                    menu.classList.remove("is-open");
+                }
+            });
+            
+            document.querySelectorAll(".navPage-childList").forEach(child => {
+                if (window.innerWidth <= 800) {
+                    child.classList.add("is-open")
+                } else {
+                    child.classList.remove("is-open");
+                }
+            });
+            
+            document.querySelectorAll(".has-subMenu").forEach(menu => {
+                if (window.innerWidth <= 800) {
+                    menu.addEventListener("hover", function(e) {
+                        e.preventDefault();
+                        
+                        menu.classList.remove("is-open");
+                    });
+                }
+            });
+            
+            window.addEventListener("resize", function() {
+                document.querySelectorAll(".navPage-subMenu").forEach(menu => {
+                    if (window.innerWidth <= 800) {
+                        menu.classList.add("is-open")
+                    } else {
+                        menu.classList.remove("is-open");
+                    }
+                });
+                
+                document.querySelectorAll(".navPage-childList").forEach(child => {
+                    if (window.innerWidth <= 800) {
+                        child.classList.add("is-open")
+                    } else {
+                        child.classList.remove("is-open");
+                    }
+                });
+                
+                document.querySelectorAll(".has-subMenu").forEach(menu => {
+                if (window.innerWidth <= 800) {
+                    menu.addEventListener("hover", function(e) {
+                        e.preventDefault();
+                        
+                        menu.classList.remove("is-open");
+                    });
+                }
+            });
+            });
+        </script>
+        
+        
+        <script>
+            // overwrite h2 color on international orders page only
+            if (window.location.pathname === '/international-orders') document.querySelectorAll('h2').forEach(h2 => h2.setAttribute('style', 'color: #fff !important'));
+        </script>
+    </body>
+</html>

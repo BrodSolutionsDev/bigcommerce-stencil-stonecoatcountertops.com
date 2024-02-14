@@ -1,0 +1,136 @@
+<dialog id="help-calculate-modal" class="step">
+  <div class="modal-header">
+    <p style="visibility: hidden" id="temp-total-sqft">
+      <strong>Total:</strong>
+      <span id="temp-total-sqft__result">0</span>
+      Sq Ft
+    </p>
+    <button id="close-calculate-modal" class="calculator-button">Close</button>
+  </div>
+  <div class="modal-content step-wrapper">
+    <div id="modal-calculations" class="step-wrapper__left">
+      <div class="help-calculate-input-list flex-col">
+        <h2>Countertop Sizes</h2>
+        <div class="help-calculate-inputs flex-row">
+          <p class="input-title">Section A</p>
+          <div class="input-width flex-row">
+            <label for="sectionA-width">Width:</label>
+            <input type="number" id="sectionA-width" class="countertop-surface-dimensions" />
+            <span>inches</span>
+          </div>
+          <div class="input-length flex-row">
+            <label for="sectionA-length">Length:</label>
+            <input type="number" id="sectionA-length" class="countertop-surface-dimensions" />
+            <span>inches</span>
+          </div>
+        </div>
+        <div class="help-calculate-inputs flex-row">
+          <p class="input-title">Section B</p>
+          <div class="input-width flex-row">
+            <label for="sectionB-width">Width:</label>
+            <input type="number" id="sectionB-width" class="countertop-surface-dimensions" />
+            <span>inches</span>
+          </div>
+          <div class="input-length flex-row">
+            <label for="sectionB-length">Length:</label>
+            <input type="number" id="sectionB-length" class="countertop-surface-dimensions" />
+            <span>inches</span>
+          </div>
+        </div>
+        <div class="help-calculate-inputs flex-row">
+          <p class="input-title">Section C</p>
+          <div class="input-width flex-row">
+            <label for="sectionC-width">Width:</label>
+            <input type="number" id="sectionC-width" class="countertop-surface-dimensions" />
+            <span>inches</span>
+          </div>
+          <div class="input-length flex-row">
+            <label for="sectionC-length">Length:</label>
+            <input type="number" id="sectionC-length" class="countertop-surface-dimensions" />
+            <span>inches</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="help-calculate-input-list flex-col">
+        <h2>Cutout Sizes <small>(For sinks, appliances, etc)</small></h2>
+        <div class="help-calculate-inputs flex-row">
+          <p class="input-title">Section A</p>
+          <div class="input-width flex-row">
+            <label for="sectionA-cutout-width">Width:</label>
+            <input type="number" id="sectionA-cutout-width" class="countertop-cutout-dimensions" />
+            <span>inches</span>
+          </div>
+          <div class="input-length flex-row">
+            <label for="sectionA-cutout-length">Length:</label>
+            <input type="number" id="sectionA-cutout-length" class="countertop-cutout-dimensions" />
+            <span>inches</span>
+          </div>
+        </div>
+        <div class="help-calculate-inputs flex-row">
+          <p class="input-title">Section B</p>
+          <div class="input-width flex-row">
+            <label for="sectionB-cutout-width">Width:</label>
+            <input type="number" id="sectionB-cutout-width" class="countertop-cutout-dimensions" />
+            <span>inches</span>
+          </div>
+          <div class="input-length flex-row">
+            <label for="sectionB-cutout-length">Length:</label>
+            <input type="number" id="sectionB-cutout-length" class="countertop-cutout-dimensions" />
+            <span>inches</span>
+          </div>
+        </div>
+        <div class="help-calculate-inputs flex-row">
+          <p class="input-title">Section C</p>
+          <div class="input-width flex-row">
+            <label for="sectionC-cutout-width">Width:</label>
+            <input type="number" id="sectionC-cutout-width" class="countertop-cutout-dimensions" />
+            <span>inches</span>
+          </div>
+          <div class="input-length flex-row">
+            <label for="sectionC-cutout-length">Length:</label>
+            <input type="number" id="sectionC-cutout-length" class="countertop-cutout-dimensions" />
+            <span>inches</span>
+          </div>
+        </div>
+      </div>
+      <button class="calculator-button" id="calculate-amount-button">Calculate</button>
+      <p id="calculate-help-inputs" style="display: none; color: red !important">
+        You must fill in width <strong>and</strong> length
+      </p>
+      <p id="calculate-help-amounts" style="display: none; color: red !important">
+        Your cutouts cannot be larger than your countertop
+      </p>
+    </div>
+    <div id="helper-content" class="step-wrapper__right flex-col">
+      <div id="modal-helper-content">
+        <div class="tab">
+          <button class="tablinks active" onclick="openShape(event, 'Square')">Rectangle</button>
+          <button class="tablinks" onclick="openShape(event, 'LShape')">L-Shape</button>
+          <button class="tablinks" onclick="openShape(event, 'UShape')">U-Shape</button>
+        </div>
+
+        <div id="Square" class="tabcontent" style="display: flex">
+          <img
+            id="helper-img"
+            src="https://cdn11.bigcommerce.com/s-fy21dwtsxg/images/stencil/original/image-manager/rectangle-shape.png?t=1706113186"
+          />
+        </div>
+
+        <div id="LShape" class="tabcontent">
+          <img
+            id="helper-img"
+            src="https://cdn11.bigcommerce.com/s-fy21dwtsxg/images/stencil/original/image-manager/l-shape.png?t=1706113185"
+          />
+        </div>
+
+        <div id="UShape" class="tabcontent">
+          <img
+            id="helper-img"
+            src="https://cdn11.bigcommerce.com/s-fy21dwtsxg/images/stencil/original/image-manager/u-shape.png?t=1706113186"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</dialog>

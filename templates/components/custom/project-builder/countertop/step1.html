@@ -1,0 +1,184 @@
+<div id="amount" class="step flex-col" style="display: none">
+  <h2 class="calculator-heading">Project Calculator</h2>
+  <div class="step-wrapper flex-row">
+    <div id="inputs" class="step-wrapper__left flex-col">
+      <p>
+        <label for="total-sqft">Total Sq Ft</label>
+        <input type="number" id="total-sqft" min="1" value="1" />
+      </p>
+      <p id="add-backsplash-section">
+        <input type="checkbox" id="add-backsplash" name="add_backsplash" value="addBacksplash">
+        <label for="add-backsplash">Include backsplash (adds 10% more square footage)</label>
+      </p>
+      <p>
+        <button class="open-modal-text" id="help-calculate">Help me calculate my square footage</button>
+      </p>
+      <p>
+        <button id="amount-next" class="desktop-next continue calculator-button">Next</button>
+      <p class="inputs-helper" style="color: red !important; display: none;">All fields must be filled out and be above
+        zero</p>
+      </p>
+    </div>
+
+    <div id="helper-content" class="step-wrapper__right flex-col">
+      <div class="flex-col">
+        <h3>How to pour epoxy over any surface</h3>
+        <div class="video-wrapper">
+          <iframe width="560" height="315" src="https://www.youtube.com/embed/HY5z-7Zh9mQ?si=ye7nMuTukY5RPkV9"
+            title="YouTube video player" frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{{> components/custom/project-builder/modals/help-calculate }}
+
+<script>
+  function toggleDisabled(buttonId, input) {
+    if (input.value === '' || Number(input.value) <= 0) {
+      document.getElementById(buttonId).disabled = true;
+      document.querySelector(".inputs-helper").style.display = "block";
+      input.style.borderColor = "red";
+    } else {
+      input.style.borderColor = "#B0B0B0";
+      document.querySelector(".inputs-helper").style.display = "none";
+      document.getElementById(buttonId).disabled = false;
+    }
+  }
+
+  
+  let sqFtValue = 1;
+  let sqFtPlus10Percent;
+  (function () {
+    // grab the total sqft input
+    const sqftInput = document.getElementById('total-sqft');
+    // disabled the 'next' button by default
+    // document.getElementById('amount-next').disabled = true
+    // listen for a user manually changing the input
+    sqftInput.addEventListener('change', function (e) {
+      // toggleDisabled('amount-next', e.target)
+      document.getElementById("add-backsplash").checked = false;
+      pbUpdateStorage('sqft', Number(e.target.value));
+    });
+
+    // listen for the user calculating the input via the calculator
+    ((input) => {
+      // Callback function to execute when mutations are observed
+      const callback = (mutationList, observer) => {
+        // sqftInput.value = sqftInput.dataset.total;
+        toggleDisabled('amount-next', input)
+        pbUpdateStorage('sqft', Number(input.value));
+      };
+
+      // Create an observer instance linked to the callback function
+      const observer = new MutationObserver(callback);
+
+      // Start observing the target node for configured mutations
+      observer.observe(input, { attributes: true });
+    })(sqftInput);
+  })()
+</script>
+
+<script>
+    (function () {
+      const totalSqFtInput = document.getElementById('total-sqft');
+
+      const surfaceValues = {};
+      const cutoutValues = {};
+
+      const addBacksplashInput = document.getElementById("add-backsplash");
+        document.getElementById("add-backsplash-section").addEventListener("click", function() {
+          addBacksplashInput.checked = !addBacksplashInput.checked;
+
+          const sqft = JSON.parse(localStorage.getItem("project-requirements"))['sqft'];
+
+          if (addBacksplashInput.checked) {
+            totalSqFtInput.value = (Number(totalSqFtInput.value) + (sqft * .1)).toFixed(2);
+          } else {
+            totalSqFtInput.value = (Number(totalSqFtInput.value) - (sqft*  .1)).toFixed(2);
+          }
+
+          pbUpdateStorage('sqft', Number(totalSqFtInput.value));
+        })
+
+      // add the value of only the edited surface inputs
+      document.getElementById('modal-calculations').addEventListener('change', function (e) {
+        // only grab the target if it has this class
+        const input = e.target.closest('.countertop-surface-dimensions');
+        if (!input) return;
+        if (Number(input.value) === 0) return;
+        // destructure the section name and dimension name from the id of the input
+        const [section, dimension] = input.id.split('-');
+        // if no section exists in the surface values input, add an empty object
+        if (!surfaceValues[section]) surfaceValues[section] = {};
+        // set the value to the value of the input
+        surfaceValues[section][dimension] = {
+          value: Number(input.value),
+          element: input
+        };
+      });
+
+      // add the value of only the edited cutout inputs
+      document.getElementById('modal-calculations').addEventListener('change', function (e) {
+        // only grab the target if it has this class
+        const input = e.target.closest('.countertop-cutout-dimensions');
+        if (!input) return;
+        // destructure the section name and dimension name from the id of the input
+        // second comma is required since the id has two dashes
+        const [section, , dimension] = input.id.split('-');
+        // if no section exists in the surface values input, add an empty object
+        if (!cutoutValues[section]) cutoutValues[section] = {};
+        // set the value to the value of the input
+        cutoutValues[section][dimension] = {
+          value: Number(input.value),
+          element: input
+        };
+      });
+
+      function validateInputsReturnTotals(event, valuesObj) {
+        let tempTotal = 0;
+        for (const section of Object.values(valuesObj)) {
+          if (Object.values(section).length < 2) {
+            const invalidElement = Object.values(section)[0].element || Object.values(section)[1].element;
+            invalidElement.closest('.help-calculate-inputs').style.background = 'rgba(255, 0, 0, .25)';
+            document.getElementById('calculate-help-inputs').style.display = 'block';
+            event.stopImmediatePropagation();
+            return;
+          } else {
+            const invalidElement = Object.values(section)[0].element || Object.values(section)[1].element;
+            invalidElement.closest('.help-calculate-inputs').style.background = 'transparent';
+            document.getElementById('calculate-help-inputs').style.display = 'none';
+          }
+          // add the length * width of the sections to the total
+          tempTotal += calculateTotalSqFt(section);
+        }
+        return tempTotal;
+      }
+
+      const calculateTotalSqFt = arr => Object.values(arr).reduce((acc, cur) => acc.value * cur.value);
+
+      document.getElementById('calculate-amount-button').addEventListener('click', function (e) {
+        // set the total to zero to reset the value every time
+        // loop over the surface value sections
+        let totalSurface = validateInputsReturnTotals(e, surfaceValues);
+        let totalCutout = validateInputsReturnTotals(e, cutoutValues);
+
+        if (totalSurface === undefined || totalCutout === undefined) return;
+
+        if (totalCutout > totalSurface) {
+          e.stopImmediatePropagation();
+          document.getElementById('calculate-help-amounts').style.display = 'block';
+          return;
+        } else {
+          document.getElementById('calculate-help-amounts').style.display = 'none';
+           // set the total sq ft input in step 1 to the value, fixed to two decimal places
+          totalSqFtInput.dataset.total = ((totalSurface - totalCutout) / 144).toFixed(2);
+          totalSqFtInput.value = totalSqFtInput.dataset.total;
+          document.getElementById("help-calculate-modal").removeAttribute("open")
+        }
+      });
+    })();
+</script>

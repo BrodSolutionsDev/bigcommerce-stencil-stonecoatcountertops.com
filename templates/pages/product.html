@@ -1,0 +1,237 @@
+---
+product:
+    videos:
+        limit: {{theme_settings.productpage_videos_count}}
+    reviews:
+        limit: {{theme_settings.productpage_reviews_count}}
+    related_products:
+        limit: {{theme_settings.productpage_related_products_count}}
+    similar_by_views:
+        limit: {{theme_settings.productpage_similar_by_views_count}}
+---
+{{inject "productId" product.id}}
+{{inject "zoomSize" theme_settings.zoom_size}}
+{{inject "productSize" theme_settings.product_size}}
+
+{{#partial "page"}}
+
+    {{> components/common/breadcrumbs breadcrumbs=breadcrumbs}}
+
+    {{#each product.shipping_messages}}
+        {{> components/common/alert-info message}}
+    {{/each}}
+    
+
+
+    <div>
+        {{> components/custom/product/product-view schema=true  }}
+
+        {{{region name="product_below_content"}}}
+
+        <section class="product-description">
+            <h2 class="product-section-title">Product Information</h2>
+            {{{ product.description }}}
+            {{#if product.warranty}}
+            <div id="technical-docs">
+            <h2 class="product-section-title">Technical Documents</h2>
+                <div id="technical-docs-links">
+                {{{ product.warranty }}}
+                </div>
+            </div>
+            <script>
+            document.querySelectorAll("#technical-docs-links a").forEach(link => link.className = "button--primary");
+            </script>
+            {{/if}}
+        </section>
+        
+        <section class="product-coverageSection">
+            {{{ region name="product_coverage_section"}}}
+        </section>
+        
+        <section class="product-techSpecs">
+            <h2 class="product-section-title">Technical Specs</h2>
+            <ul class="tech-specs"></ul>
+            <script>
+            const fields = [];
+            </script>
+            {{#each product.custom_fields}}
+            <script>fields.push({
+                name: "{{name}}",
+                value: "{{value}}"
+            })</script>
+            {{/each}}
+            <script>
+                console.log(fields)
+                const specsList = document.querySelector('.tech-specs');
+                const minTemp = fields.filter(field => field.name === 'min-temp')[0];
+                const maxTemp = fields.filter(field => field.name === 'max-temp')[0];
+                const mixVolume = fields.filter(field => field.name === 'mix-volume')[0];
+                const mixWeight = fields.filter(field => field.name === 'mix-weight')[0];
+                const cureTime = fields.filter(field => field.name === 'cure-time')[0];
+                const tempLi = document.createElement("li");
+                const mixRatioLi = document.createElement("li");
+                const timingLi = document.createElement("li");
+                tempLi.className = 'tech-spec';
+                tempLi.innerHTML = `
+                <div class="tech-spec-header">
+                        <div class="tech-spec-image"><img src="{{cdn 'img/thermometer.png'}}" alt="Glass thermometer icon" width="200" height="200"></div>
+                        <h3>Temperature Application</h3>
+                    </div>
+                    <ul class="tech-spec-list">
+                        ${minTemp ? `<li>Minimum Application Temperature: ${minTemp.value}</li>` : ''}
+                        ${maxTemp ? `<li>Minimum Application Temperature: ${maxTemp.value}</li>` : ''}
+                    </ul>
+                `;
+
+                mixRatioLi.className = 'tech-spec';
+                mixRatioLi.innerHTML = `
+                <div class="tech-spec-header">
+                    <div class="tech-spec-image"><img src="{{cdn 'img/measuring_cup.png'}}" alt="Measuring cup icon" width="200" height="200"></div>
+                        <h3>Mixing Ratio</h3>
+                    </div>
+                    <ul class="tech-spec-list">
+                        ${mixVolume ? `<li>Mix Ratio By Volume: ${mixVolume.value}</li>` : ''}
+                        ${mixWeight ? `<li>Mix Ratio By Weight: ${mixWeight.value}</li>` : ''}
+                    </ul>
+                `;
+
+                timingLi.className = 'tech-spec';
+                timingLi.innerHTML = `
+                <div class="tech-spec-header">
+                    <div class="tech-spec-image"><img src="{{cdn 'img/clock.png'}}" alt="Clock icon" width="200" height="200"></div>
+                        <h3>Technical Timing</h3>
+                    </div>
+                    <ul class="tech-spec-list">
+                        ${cureTime ? `<li>Cure Time: ${cureTime.value}</li>` : ''}
+                    </ul>
+                `;
+                if (minTemp || maxTemp) specsList.appendChild(tempLi)
+                if (mixVolume || mixWeight) specsList.appendChild(mixRatioLi)
+                if (cureTime) specsList.appendChild(timingLi)
+                if (!minTemp && !maxTemp && !mixVolume && !mixWeight && !cureTime) {
+                    document.querySelector('.product-techSpecs').style.display = "none";
+                }
+            </script>
+        </section>
+        
+        {{#if product.videos}}
+        <section class="product-videoSection" id="videoSection">
+            <h2 class="product-section-title">Video Resources</h2>
+                <ul class="custom-videoGallery-list">
+                    {{#if product.videos.list.[0]}}
+                    <li class="custom-videoGallery-item">
+                        <div class="custom-videoWrapper">
+                            <iframe
+                                id="player"
+                                class="lazyload"
+                                type="text/html"
+                                width="640"
+                                height="360"
+                                frameborder="0"
+                                webkitAllowFullScreen
+                                mozallowfullscreen
+                                allowFullScreen
+                                data-src="//www.youtube.com/embed/{{product.videos.list.[0].id}}"
+                                data-video-player>
+                            </iframe>
+                        </div>
+                        <h3>Product Highlight</h3>
+                    </li>
+                    {{/if}}
+                    {{#if product.videos.list.[1]}}
+                    <li class="custom-videoGallery-item">
+                        <div class="custom-videoWrapper">
+                            <iframe
+                                id="player"
+                                class="lazyload"
+                                type="text/html"
+                                width="640"
+                                height="360"
+                                frameborder="0"
+                                webkitAllowFullScreen
+                                mozallowfullscreen
+                                allowFullScreen
+                                data-src="//www.youtube.com/embed/{{product.videos.list.[1].id}}"
+                                data-video-player>
+                            </iframe>
+                        </div>
+                        <h3>Product Tutorial</h3>
+                    </li>
+                    {{/if}}
+                </ul>
+        </section>
+        {{/if}}
+        
+        <div class="container">
+            <div class="yotpo yotpo-main-widget"
+                data-product-id="{{ product.id }}"
+                data-price="{{ product.price.without_tax.value }}"
+                data-currency="{{ currency_selector.active_currency_code }}"
+                data-name="{{ product.title }}"
+                data-url="{{ product.url }}"
+                data-image-url="{{getImage product.main_image}}"
+                data-description="{{ product.description }}">
+            </div>
+        </div>
+
+        {{> components/elevate/product-tabs }}
+
+        {{> components/products/schema}}
+    </div>
+{{/partial}}
+{{> layout/base}}
+
+<script>
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+
+        const element = document.querySelector(this.getAttribute('href'));
+        const headerOffset = document.querySelector(".header").getBoundingClientRect().height;
+        const elementPosition = element.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - headerOffset - 20;
+    
+        window.scrollTo({
+            top: offsetPosition,
+            behavior: "smooth"
+        });
+    });
+});
+</script>
+
+
+<script type="text/javascript">
+var _learnq = _learnq || [];
+
+var product_categories = [];
+{{#each product.category}}
+product_categories.push('{{this}}')
+{{/each}}
+
+var item = {
+Name: "{{product.title}}",
+ProductID: "{{product.id}}",
+ImageURL: "{{getImage product.main_image 'product_size' (cdn theme_settings.default_image_product)}}",
+URL: "{{product.url}}",
+Brand: "{{product.brand.name}}",
+Categories: product_categories,
+Price: "{{product.price.without_tax.value}}",
+CompareAtPrice:"{{product.price.rrp_without_tax.value}}"
+};
+
+_learnq.push(['track', 'Viewed Product', item]);
+
+_learnq.push(['trackViewedItem', {
+Title: item.Name,
+ItemId: item.ProductID,
+Categories: item.Categories,
+ImageUrl: item.ImageURL,
+Url: item.URL,
+Metadata: {
+Brand: item.Brand,
+Price: item.Price,
+CompareAtPrice: item.CompareAtPrice
+}
+}]);
+</script>
+

@@ -1,0 +1,142 @@
+<ul class="tabs" data-tab>
+    <li class="tab is-active">
+        <a class="tab-title" href="#tab-description">
+          <span class="icon-Description show theme-icon" data-icon="&#xe90a;"></span>
+          <span class="show">{{lang 'products.description'}}</span>
+
+          
+        
+        </a>
+    </li> 
+    {{#all product.custom_fields theme_settings.show_custom_fields_tabs}}
+        <li class="tab">
+            <a class="tab-title" href="#tab-{{dashcase (lowercase (sanitize theme_settings.pdp-custom-fields-tab-label))}}">
+              <span class="icon-brand show theme-icon" data-icon="&#xe909;"></span>
+              <span class="show">{{sanitize theme_settings.pdp-custom-fields-tab-label}}</span>
+            </a>
+        </li> 
+    {{/all}}
+    <!-- {{#if product.warranty}}
+        <li class="tab">
+            <a class="tab-title" href="#tab-warranty">
+              <span class="icon-Specifications show theme-icon" data-icon="&#xe90c;"></span>
+              <span class="show">{{lang 'products.warranty'}}</span>
+            </a>
+        </li>
+    {{/if}} -->
+    {{#all settings.show_product_reviews theme_settings.show_product_reviews_tabs product.reviews.total}}
+        <li class="tab">
+            <a class="tab-title productView-reviewTabLink" href="#tab-reviews">
+              <span class="icon-Reviews show theme-icon" data-icon="&#xe90b;"></span>
+              <span class="show">{{lang 'products.reviews.title'}}</span>
+            </a>
+        </li>
+    {{/all}}
+    <!-- {{#if product.videos.list.length}}
+        <li class="tab">
+            <a class="tab-title" href="#tab-videos">
+              <span class="icon-video show theme-icon" data-icon="&#xe90d;"></span>
+              <span class="show">{{lang 'products.videos.header'}}</span>
+            </a>
+        </li>
+    {{/if}} -->
+    <li class="tab">
+            <a class="tab-title" href="#tab-training">
+              <span class="icon-video show theme-icon" data-icon="&#xe90d;"></span>
+              <span class="show">Training</span>
+            </a>
+        </li>
+    <!-- calculator tab -->
+    <li class="tab">
+        <a class="tab-title" href="#tab-calculator">
+          <span class="icon-calculator show theme-icon"><img height="22" width="22" src="{{cdn 'img/calculator.png'}}" alt="calculator icon"></span>
+          <span class="show">Calculator</span>
+        </a>
+    </li>
+    <!-- answerbase tab -->
+    <li class="tab">
+      <a class="tab-title" href="#tab-answerbase">
+        <span class="icon-calculator show theme-icon"><img height="22" width="22" src="{{cdn 'img/q&a.png'}}" alt="q&a icon"></span>
+        <span class="show">Q&A</span>
+      </a>
+  </li>
+</ul>
+<div class="tabs-contents">
+    <div class="tab-content is-active" id="tab-description">
+      <div class="description-body-inner">{{{product.description}}}</div>
+      <button id="show-more-btn" class="button button--primary">Show more</button>
+
+      <script>
+        const showMoreBtn = document.getElementById("show-more-btn");
+        const descriptionBody = document.querySelector(".description-body-inner");
+    
+        if (descriptionBody.getBoundingClientRect().height > 300) {
+            descriptionBody.style.height = "300px";
+            showMoreBtn.style.display = "block";
+            descriptionBody.classList.add("showMoreBlur");
+    
+            showMoreBtn.addEventListener("click", function() {
+                if (descriptionBody.getBoundingClientRect().height <= 300) {
+                    descriptionBody.style.height = "fit-content";
+                    showMoreBtn.innerText = "Show less"
+                    descriptionBody.classList.remove("showMoreBlur")
+                } else {
+                    descriptionBody.style.height = "300px";
+                    showMoreBtn.innerText = "Show more";
+                    descriptionBody.classList.add("showMoreBlur")
+                }
+            });
+        } else {
+          showMoreBtn.setAttribute("style", "display: none !important;");
+        }
+      </script>
+    </div>
+    
+    {{#all product.custom_fields theme_settings.show_custom_fields_tabs}}
+      <div class="tab-content" id="tab-{{dashcase (lowercase (sanitize theme_settings.pdp-custom-fields-tab-label))}}">
+         
+            {{#each product.custom_fields}}
+            <dl class="productView-info-dl">
+               <dt class="productView-info-name">{{name}}:</dt>
+               <dd class="productView-info-value">{{{value}}}</dd>
+            </dl>
+            {{/each}}
+         
+      </div>
+   {{/all}}
+   <!-- {{#if product.warranty}}
+       <div class="tab-content" id="tab-warranty">
+           {{{product.warranty}}}
+       </div>
+   {{/if}} -->
+   {{#all settings.show_product_reviews theme_settings.show_product_reviews_tabs}}
+       <div class="tab-content" id="tab-reviews">
+           {{> components/products/reviews reviews=product.reviews product=product urls=urls}}
+       </div>
+   {{/all}}
+   <!-- {{#if product.videos.list.length}}
+      <div class="tab-content" id="tab-videos">
+        {{> components/elevate/videos product.videos}}
+      </div>
+    {{/if}} -->
+    <div class="tab-content" id="tab-training">
+      {{#if product.warranty}}
+        <h2>Instructions</h2>
+        {{{product.warranty}}}
+      {{/if}}
+      {{#if product.videos.list.length}}
+        <h2>Videos</h2>
+        {{> components/elevate/videos product.videos}}
+      {{/if}}
+    </div>
+    <div class="tab-content" id="tab-calculator">
+        <h2>Surface Calculator</h2>
+        {{> components/custom/epoxy-calculator}}
+
+        <h2>Deep Pour Calculator</h2>
+        {{> components/custom/deep-pour-calculator}}
+      </div>
+      <div class="tab-content" id="tab-answerbase">
+        <div class="answerbase-tab"></div>
+      </div>
+</div>

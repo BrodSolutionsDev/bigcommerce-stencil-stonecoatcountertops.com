@@ -1,0 +1,149 @@
+<div id="stateAndUndercoat" class="flex-col step" style="display: none">
+  <h2 class="calculator-heading">Project Surface</h2>
+  <div class="step-wrapper flex-row">
+    <div class="step-wrapper__left">
+      <div id="project-surface" class="flex-col">
+        <div
+          id="project-state"
+          class="project-selection-wrapper flex-col"
+        >
+          <h3>What is your project surface?</h3>
+          <select name="project_surface">
+            <option value="Existing Countertop" data-sku="SCBPS1QT">Updating Old Countertop</option>
+            <option value="New Countertop" data-sku="">Building New Countertop</option>
+          </select>
+          </p>
+        </div>
+
+        <div class="step-help-text">
+          <h4>Help me choose</h4>
+          <p>If your countertops are in good condition, cover them with Stone Coat Epoxy instead of building new ones from MDF.  Save time and money while achieving a beautiful new countertop finish.</p>
+          <p>If your countertops are damaged, deteriorating or maybe you're starting from scratch, it may be time to build new ones.  We'll guide you through the entire process, ensuring your project is a success.</p>
+        </div>
+
+        <div
+          id="project-undercoat"
+          class="project-selection-wrapper flex-col"
+        >
+          <h3>What undercoat do you need?</h3>
+          <select name="undercoat_color">
+            <option value="White" data-sku="SCWEUCQT">White</option>
+            <option value="Black" data-sku="SCBEUCQT">Black</option>
+            <option value="Grey" data-sku="SCWEUCQT__SCBEUCQT">Grey</option>
+          </select>
+        </div>
+
+        <div id="undercoat-help-text" class="step-help-text">
+          <h4>Help me choose</h4>
+          <p>Our high bond, ammonia-free paint is perfect for coloring your substrate before you pour.  Pick you Undercoat Color based off the color of your countertop pour.  White or light countertops use white undercoat.  Grey or neutral countertops will use grey undercoat.  Black or dark countertops will use black undercoat.</p>
+        </div>
+        <button id="state-next" class="desktop-next continue calculator-button">Next</button>
+      </div>
+    </div>
+    {{> components/custom/project-builder/modals/help-choose-surface }}
+    <div class="step-wrapper__right">
+      <div class="flex-col">
+        <h3>How to pour epoxy over any surface</h3>
+        <div class="video-wrapper">
+          <iframe
+            width="560"
+            height="315"
+            src="https://www.youtube.com/embed/BVGYT6R1qys?si=vn49THfotR-AGZSp"
+            title="YouTube video player"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen
+          ></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const projectSurface = document.querySelector("[name='project_surface']");
+    const projectUndercoat = document.querySelector("[name='undercoat_color']");
+
+    const callback = async (mutationList, observer) => {
+      if (currentStep !== 3) return;
+      if (JSON.parse(localStorage.getItem('project-requirements'))['project_system'].name !== 'Custom') {
+        document.getElementById('project-undercoat').style.display = 'none';
+        document.getElementById('undercoat-help-text').style.display = 'none';
+
+        let surfaceChoice = Array.from(projectSurface.children).filter(
+          child => child.value === projectSurface.value
+        )[0];
+
+        let undercoatChoice = Array.from(projectUndercoat.children).filter(
+          child => child.value === projectUndercoat.value
+        )[0];
+
+        pbUpdateStorage("project_type", {
+          name: surfaceChoice.value,
+          sku: surfaceChoice.dataset.sku
+        });
+
+        projectSurface.addEventListener("change", function(e) {
+          surfaceChoice = Array.from(projectSurface.children).filter(
+            child => child.value === projectSurface.value
+          )[0];
+
+          pbUpdateStorage("project_type", {
+            name: surfaceChoice.value,
+            sku: surfaceChoice.dataset.sku
+          });
+        });
+      } else {
+        document.getElementById('project-undercoat').style.display = 'block';
+        document.getElementById('undercoat-help-text').style.display = 'block';
+
+        let surfaceChoice = Array.from(projectSurface.children).filter(
+          child => child.value === projectSurface.value
+        )[0];
+
+        pbUpdateStorage("project_type", {
+            name: surfaceChoice.value,
+            sku: surfaceChoice.dataset.sku
+          });
+
+        let undercoatChoice = Array.from(projectUndercoat.children).filter(
+          child => child.value === projectUndercoat.value
+        )[0];
+
+        pbUpdateStorage("undercoat_color", {
+            name: undercoatChoice.value,
+            sku: undercoatChoice.dataset.sku
+          });
+
+        projectSurface.addEventListener('change', function () {
+          surfaceChoice = Array.from(projectSurface.children).filter(
+            child => child.value === projectSurface.value
+          )[0];
+
+          pbUpdateStorage("project_type", {
+            name: surfaceChoice.value,
+            sku: surfaceChoice.dataset.sku
+          });
+        })
+
+        projectUndercoat.addEventListener('change', function () {
+          undercoatChoice = Array.from(projectUndercoat.children).filter(
+            child => child.value === projectUndercoat.value
+          )[0];
+
+          pbUpdateStorage("undercoat_color", {
+            name: undercoatChoice.value,
+            sku: undercoatChoice.dataset.sku
+          });
+        });
+      }
+    };
+
+    // Create an observer instance linked to the callback function
+    const observer = new MutationObserver(callback);
+
+    // Start observing the target node for configured mutations
+    observer.observe(document.getElementById('progress-bar'), { attributes: true, childList: true, subtree: true });
+  })();
+</script>

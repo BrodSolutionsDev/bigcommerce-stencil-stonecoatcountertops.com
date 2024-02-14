@@ -1,0 +1,60 @@
+.our-story-element .our-story-contents .banners .banner .our-story-content .our-story-sub-content::before {
+  border-color: #c8944e;
+}
+
+.section-content .section-sub-content {
+  @media only screen and (max-width: 550px) {
+    aspect-ratio: 16/9;
+  }
+}
+
+.trending-products {
+    background: #000;
+}
+
+.slick-list.draggable, .slick-track {
+    max-height: unset !important;
+}
+
+.trending-products .card-figcaption-button-section {
+  display: block !important;
+}
+
+.cat-layout-5 {
+  .category-title {
+    @media only screen and (max-width: 2000px) {
+      font-size: 30px !important;
+    }
+
+    @media only screen and (max-width: 1700px) {
+      font-size: 26px !important;
+    }
+
+    @media only screen and (max-width: 1500px) {
+      font-size: 22px !important;
+    }
+
+    @media only screen and (max-width: 1300px) {
+      font-size: 18px !important;
+    }
+
+    @media only screen and (max-width: 1100px) {
+      font-size: 16px !important;
+    }
+
+    @media only screen and (max-width: 1000px) {
+      word-wrap: break-word;
+    }
+
+    @media only screen and (max-width: 550px) {
+      word-wrap: normal;
+      font-size: 28px !important;
+    }
+  }
+
+  .category-subcontent {
+    @media only screen and (max-width: 1000px) {
+      width: 90%;
+    }
+  }
+}

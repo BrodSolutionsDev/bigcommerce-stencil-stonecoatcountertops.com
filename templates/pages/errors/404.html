@@ -1,0 +1,75 @@
+{{#partial "page"}}
+
+{{> components/common/breadcrumbs breadcrumbs=breadcrumbs}}
+
+<main class="page">
+    
+    <section class="page-content page-content--centered not-found">
+        <div class="not-found__header">
+            <h1>{{lang 'page_not_found.page_heading'}}</h1>
+            <h2>404</h2>
+        </div>
+
+        <p class="not-found__message">
+            {{lang 'page_not_found.message'}}
+        </p>
+
+        <div class="not-found__search">
+            {{> components/common/search-box placeholder="Search our store"}}
+        </div>
+        
+
+        <div class="not-found__actions">
+            
+            <a href="/" class="not-found__button" title="Go to homepage">Homepage</a>
+            <a href="/faq" class="not-found__button" title="FAQs">Visit our FAQs</a>
+        </div>
+
+        <div class="not-found__links">
+            <a href="https://www.stonecoatcountertops.com/products/countertops/" title="Countertop Kits">
+                <img 
+                    src="https://cdn11.bigcommerce.com/s-fy21dwtsxg/images/stencil/2560w/k/countertops__65973.original.jpg"
+                    alt="countertop kits">
+                <h2>Countertop Kits</h2>
+            </a>
+            <a href="https://www.stonecoatcountertops.com/products/flooring-epoxy/" title="Flooring Epoxy">
+                <img 
+                    src="https://cdn11.bigcommerce.com/s-fy21dwtsxg/images/stencil/2560w/o/flooring__64935.original.jpg"
+                    alt="flooring epoxy">
+                <h2>Flooring Epoxy</h2>
+            </a>
+            <a href="https://www.stonecoatcountertops.com/products/shower-epoxy/" title="Shower Epoxy">
+                <img 
+                    src="https://cdn11.bigcommerce.com/s-fy21dwtsxg/images/stencil/2560w/v/showers__81736.original.jpg"
+                    alt="shower epoxy">
+                <h2>Shower Epoxy</h2>
+            </a>
+            <a href="https://www.stonecoatcountertops.com/products/epoxy-tools-supplies/" title="Tools and Supplies">
+                <img 
+                    src="https://cdn11.bigcommerce.com/s-fy21dwtsxg/images/stencil/2560w/s/scc_training_1200x600__01441.original.jpg"
+                    alt="tools and supplies">
+                <h2>Tools & Supplies</h2>
+            </a>
+            <a href="https://www.stonecoatcountertops.com/epoxy-color-center" title="Colorants">
+                <img 
+                    src="https://cdn11.bigcommerce.com/s-fy21dwtsxg/images/stencil/2560w/y/colorants__32354.original.jpg"
+                    alt="colorants">
+                <h2>Colorants</h2>
+            </a>
+            <a href="https://www.stonecoatcountertops.com/stone-coat-training" title="Training">
+                <img 
+                    src="https://i.shgcdn.com/fe1f1378-f70d-416b-8cd9-984538e0f692/-/format/auto/-/preview/3000x3000/-/quality/lighter/-/resize/360x/"
+                    alt="training">
+                <h2>Training</h2>
+            </a>
+        </div>
+
+        <div class="not-found__contact">
+            <p>Still can't find what you're looking for?<br>
+            <a href="/contact-us" title="Contact us">Contact Us</a></p>
+        </div>
+    </section>
+</main>
+
+{{/partial}}
+{{> layout/base}}

@@ -1,0 +1,22 @@
+.downloads-content {
+  max-width: fit-content;
+  margin: 0 auto;
+}
+
+.downloads-list {
+  list-style: none;
+  margin-bottom: 70px;
+
+  li {
+    margin-bottom: 10px;
+
+    a {
+      text-decoration: none;
+      font-size: 20px;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+}

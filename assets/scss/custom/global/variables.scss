@@ -1,0 +1,249 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:ital,wght@0,400;0,600;0,900;1,400;1,600;1,900&display=swap');
+
+// colors
+$black: #221F20;
+$white: #FFFFFF;
+$orange: #B75533;
+$blue: #526D9D;
+$yellow: #C8944E;
+$green: #3E6855;
+$light-grey: #F2F2F2;
+$medium-grey: #D1D1D1;
+$bg-soft: #F9F9F9;
+$bg-white: #FFFFFF;
+
+// radius
+$border-radius-sm: 15px;
+$border-radius-sm: 7px;
+$border-radius-full: 100px; // full rounded edges
+
+// padding
+$padding-small: 10px;
+$padding-medium: 20px;
+$padding-large: 50px;
+
+// widths
+$max-width: 1200px; // set global max width
+$min-width: 320px;
+
+// shadows
+$box-shadow: 0 11px 24px rgba(34, 31, 32, .1);
+$box-shadow-top: 0 -11px 24px rgba(34, 31, 32, .1);
+
+// font sizes
+:root {
+  font-size: 100%; // 10px - allows auto scaling with window resizing. Good accessibility
+}
+// $font-size-14: 1.4rem; // 14px
+$font-size-14: 14px; // 14px
+// $font-size-16: 1.6rem; // 16px
+$font-size-16: 16px; // 16px
+// $font-size-18: 1.8rem; // 18px
+$font-size-18: 18px; // 18px
+// $font-size-20: 2rem; // 20px
+$font-size-20: 20px; // 20px
+// $font-size-25: 2.5rem; // 25px
+$font-size-25: 25px; // 25px
+// $font-size-30: 3rem; // 30px
+$font-size-30: 30px; // 30px
+// $font-size-40: 4rem; // 40px
+$font-size-40: 40px; // 40px
+
+// font families
+$montserrat: 'Montserrat', sans-serif;
+$bebas-neue: 'Bebas Neue', sans-serif;
+
+/*
+  To use a mixin, add @include montserrat-regular to a style. This will add the whole
+  mixin block as a reusable style anywhere it's included. You can also pass parameters to
+  mixins like functions to add styles based on a condition (use $parameter: default to set
+  default parameters). 
+
+  Mixin docs: https://sass-lang.com/documentation/at-rules/mixin
+
+  Examples: 
+  .title {
+    @include montserrat-regular;
+  }
+
+  .title {
+    @include montserrat-bold(italic);
+  }
+*/
+@mixin montserrat-regular($style: normal) {
+  font-family: $montserrat;
+  font-style: $style;
+  font-weight: 400;
+}
+
+@mixin montserrat-bold($style: normal) {
+  font-family: $montserrat;
+  font-style: $style;
+  font-weight: 600;
+}
+
+@mixin montserrat-black($style: normal) {
+  font-family: $montserrat;
+  font-style: $style;
+  font-weight: 900;
+}
+
+// breakpoint styles
+@mixin tablet-container {
+  @media only screen and (max-width: 1200px) {
+    @content;
+  }
+}
+
+// container
+@mixin mobile-container {
+  @media only screen and (max-width: 800px) {
+    @content;
+  }
+}
+
+// flex
+@mixin flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@mixin flex-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  align-items: center;
+}
+
+@mixin flex-column($direction: column) {
+  display: flex;
+  flex-direction: $direction;
+  gap: 10px;
+  //align-items: center;
+}
+
+@mixin flex-row-heading {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+@mixin flex-row-wrap {
+  display: flex; 
+  flex-flow: row wrap;
+}
+
+@mixin quantity-buttons($background: $light-grey) {
+  background: $background;
+  border-radius: $border-radius-full;
+  color: $black;
+  padding: 2px 7px;
+
+  button {
+    border: none;
+    color: inherit;
+  }
+  
+  input {
+    @include montserrat-regular;
+    color: inherit;
+    background: inherit;
+  }
+}
+.flex-center {
+  @include flex-center;
+}
+.flex-row {
+  @include flex-row;
+}
+.flex-column {
+  @include flex-column;
+}
+.flex-column-reverse {
+  @include flex-column(column-reverse);
+}
+.flex-row-heading {
+  @include flex-row-heading;
+}
+.flex-row-wrap {
+  @include flex-row-wrap;
+}
+
+
+// grid
+@mixin grid {
+  display: grid;
+  grid-gap: 10px;
+  grid-template-columns: repeat(4, calc(50% - 40px));
+  grid-template-rows: minmax(150px, 1fr);
+  overflow-x: scroll;
+  scrollbar-width: none;
+  padding-right: 17px; /* Increase/decrease this value for cross-browser compatibility */
+    box-sizing: content-box; /* So the width will be 100% + 17px */
+    cursor: grab;
+}
+.grid {
+  @include grid;
+  
+}
+.grid::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+@mixin card {
+  background: $white;
+  border-radius: $border-radius-sm;
+  box-shadow: $box-shadow;
+  padding: $padding-medium;
+  width: 100%;
+  height: auto;
+}
+// transition
+$transition-fast: .15s;
+$transition-slow: .25s;
+
+// Testing removal of headline / reduce whitespace 
+.shop-by-category > .container > .section-title {
+    display: none;
+}
+.shop-by-category > .container {
+    max-width: 1800px;
+}
+
+// FA fix //
+
+.shg-fa {
+    font-family: FontAwesome!important;
+}
+
+// Temporary breakpoint fix
+.margin-fix {
+margin-top: -3.4%;
+
+  @media screen and (min-width: 800px) and (max-width: 1024px) {
+    margin-top: 8%!important;
+  }
+}
+
+// Category button alignment fix
+.autoparts .section-content .section-sub-content .category-content .category-subcontent .category-link {
+    margin-left: inherit!important;
+    margin-right: inherit!important;
+}
+
+// white text fix temporary //
+.white span, .white > .shogun-heading-component > h1 {
+    color: white!important;
+}
+
+// New Button Styling test //
+.new-button a {
+    margin-left: 0px!important;
+    padding: 15px 30px!important;
+}
+
+input #email_93184565 {
+    color: #000!important;
+}

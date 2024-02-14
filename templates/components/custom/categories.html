@@ -1,0 +1,19 @@
+<div class="section scc-categories">
+  <h2>{{title}}</h2>
+  <div class="slick-slider-standard flex-row">
+    {{#each categories.[0].children}}
+
+    <a class="product-card-alt" href="{{url}}">
+      {{#if image}}
+      <div class="product-card-img">
+        {{> components/common/responsive-img image=image fallback_size=theme_settings.thumbnail
+        lazyload=theme_settings.lazyload_mode }}
+      </div>
+      {{/if}}
+      <div class="product-card-details">
+        <h3>{{name}}</h3>
+      </div>
+    </a>
+    {{/each}}
+  </div>
+</div>

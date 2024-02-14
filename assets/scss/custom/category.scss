@@ -1,0 +1,45 @@
+.page-sidebar {
+  display: none;
+}
+
+#product-listing-container {
+  width: 100%;
+}
+
+.productGrid,
+.productCarousel {
+  background-color: #fff;
+}
+
+.category-banner-title {
+  text-shadow: 3px 3px 3px rgba(0, 0, 0, .7);
+}
+
+.trim-description {
+  p {
+    font-size: 16px !important;
+  }
+}
+
+.product-listing-filter-section {
+  .product-listing-filter-right {
+    display: none;
+  }
+}
+
+
+.toggle-more {
+  color: #333;
+
+  &::before {
+    color: #333 !important;
+  }
+}
+
+.category-banner-title {
+  text-shadow: none;
+}
+
+.box-shade {
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.8) 100%) !important;
+}

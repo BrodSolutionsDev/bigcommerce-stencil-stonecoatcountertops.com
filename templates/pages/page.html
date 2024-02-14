@@ -1,0 +1,83 @@
+{{#partial "page"}}
+
+{{> components/common/breadcrumbs breadcrumbs=breadcrumbs}}
+
+<main class="page">
+
+    {{#if page.sub_pages}}
+    <nav class="navBar navBar--sub">
+        <ul class="navBar-section account-navigation">
+        {{#each page.sub_pages}}
+            <li class="navBar-item"><a class="navBar-action" href="{{url}}">{{title}}</a></li>
+        {{/each}}
+        </ul>
+    </nav>
+    {{/if}}
+
+    {{{region name="page_builder_content"}}}
+
+    <div class="page-content page-content--centered">
+        {{#replace '%%Syndicate%%' page.content}}
+            {{> components/page/rss_feed}}
+        {{else}}
+            <p>{{{page.content}}}</p>
+        {{/replace}}
+    </div>
+
+    {{#if page.feed}}
+        <ul>
+            {{#each page.feed}}
+                <li>
+                    <h6><a href="{{url}}" target="_blank">{{title}}</a></h6>
+                    <p>{{content}}</p>
+                </li>
+            {{/each}}
+        </ul>
+    {{/if}}
+</main>
+
+{{/partial}}
+
+{{> layout/base}}
+
+<script>
+    if(document.querySelectorAll('.product-card-cart .button')) {
+        const cartButtons = document.querySelectorAll('.product-card-cart .button');
+        for (let button of cartButtons) {
+            button.addEventListener("click", function(e) {
+                e.preventDefault();
+                const variantData = {
+                    product_id: Number(e.target.dataset.productId),
+                    variant_attribute_id: Number(e.target.dataset.variantAttributeId),
+                    variant_id: Number(e.target.dataset.variantId),
+                    variant_option_id: Number(e.target.dataset.variantOptionId),
+                    quantity: Number(e.target.previousElementSibling.value)
+                }
+
+                if (variantData.quantity > 0) {
+                    const formData = new FormData();
+                    formData.append('action', 'add');
+                    // formData.append('product_id', variantData.product_id);
+                    // formData.append(`attribute[${variantData.variant_option_id}]`, variantData.variant_attribute_id);
+                    // formData.append('qty[]', variantData.quantity);
+                    formData.append('product_id', 327); // decorative floor flakes 1 pound
+                    formData.append(`attribute[212]`, 704); // attribute - size, value - gravel
+                    formData.append('qty[]', variantData.quantity); // selected quantity
+                    window.stencilUtils.api.cart.itemAdd(formData, (err, res) => {
+                        if (err) {
+                            console.log(err);
+                            return;
+                        }
+                        const countPill = document.querySelector(".cart-quantity");
+                        countPill.innerHTML = Number(countPill.innerHTML) + variantData.quantity;
+                        e.target.setAttribute("disabled", "true");
+                        e.target.previousElementSibling.value = "";
+                        e.target.previousElementSibling.style.visibility = "hidden";
+                        e.target.className = "successfully-added-to-cart";
+                        console.log(res);
+                    });
+                }
+            });
+        }
+    }
+</script>

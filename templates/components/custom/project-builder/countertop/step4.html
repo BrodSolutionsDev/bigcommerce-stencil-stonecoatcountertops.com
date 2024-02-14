@@ -1,0 +1,74 @@
+<div id="colorAndFinish" class="flex-col step" style="display: none">
+  <h2 class="calculator-heading">Top Coat Options</h2>
+  <div class="step-wrapper flex-row">
+    <div id="finish-layer" class="step-wrapper__left flex-col">
+      <div class="project-selection-wrapper flex-col">
+        <h3>Choose your countertop top coat</h3>
+        <p id="project-finish">
+          <select name="project_finish">
+            <option value="Ultimate Top Coat matte finish" data-sku="SCTC24OZ">Matte Ultimate Top Coat</option>
+            <option value="Ultimate Top Coat gloss finish" data-sku="SCTCGLOSS24OZ">Glossy Ultimate Top Coat</option>
+            <option value="No protective surface needed" data-sku="">No Top Coat Needed</option>
+          </select>
+        </p>
+      </div>
+      <div class="step-help-text">
+        <h4>Help me choose</h4>
+        <p>
+          For maximum durability opt for our Modified Urethane Ultimate Top Coat in your choice of Gloss or Matte
+          Finish. For a high gloss finish opt for an additional top coat of clear Epoxy to add depth and protect your
+          color coat.
+        </p>
+      </div>
+      <button id="finish-next" class="desktop-next continue calculator-button">Next</button>
+    </div>
+    {{> components/custom/project-builder/modals/help-choose-finish }}
+    <div class="step-wrapper__right flex-col">
+      <div class="flex-col">
+        <h3>Pour Marble Countertop</h3>
+        <div class="video-wrapper">
+          <iframe
+            width="560"
+            height="315"
+            src="https://www.youtube.com/embed/h9ewXLb2X8E?si=CMFP3hdvI3bZcHhr"
+            title="YouTube video player"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen
+          ></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const projectFinish = document.querySelector("[name='project_finish']");
+
+    const callback = async (mutationList, observer) => {
+      if (currentStep !== 4) return;
+      let finishChoice = Array.from(projectFinish.children).filter(child => child.value === projectFinish.value)[0];
+
+      pbUpdateStorage('project_finish', {
+        name: finishChoice.value,
+        sku: finishChoice.dataset.sku
+      });
+
+      projectFinish.addEventListener('change', function (e) {
+        finishChoice = Array.from(projectFinish.children).filter(child => child.value === projectFinish.value)[0];
+
+        pbUpdateStorage('project_finish', {
+          name: finishChoice.value,
+          sku: finishChoice.dataset.sku
+        });
+      });
+    };
+
+    // Create an observer instance linked to the callback function
+    const observer = new MutationObserver(callback);
+
+    // Start observing the target node for configured mutations
+    observer.observe(document.getElementById('progress-bar'), { attributes: true, childList: true, subtree: true });
+  })();
+</script>

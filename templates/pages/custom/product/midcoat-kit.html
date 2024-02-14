@@ -1,0 +1,503 @@
+---
+product:
+  videos:
+    limit: { { theme_settings.productpage_videos_count } }
+  reviews:
+    limit: { { theme_settings.productpage_reviews_count } }
+  related_products:
+    limit: { { theme_settings.productpage_related_products_count } }
+  similar_by_views:
+    limit: { { theme_settings.productpage_similar_by_views_count } }
+---
+
+{{inject "productId" product.id}} {{inject "zoomSize" theme_settings.zoom_size}} {{inject "productSize"
+theme_settings.product_size}} {{#partial "page"}} {{> components/common/breadcrumbs breadcrumbs=breadcrumbs}} {{#each
+product.shipping_messages}} {{> components/common/alert-info message}} {{/each}}
+
+<div>
+  {{> components/custom/product/product-view schema=true }} {{{region name="product_below_content"}}}
+
+  <section class="product-description">
+    <h2 class="product-section-title">Product Information</h2>
+    {{{ product.description }}} {{#if product.warranty}}
+    <div id="technical-docs">
+      <h2 class="product-section-title">Technical Documents</h2>
+      <div id="technical-docs-links">{{{ product.warranty }}}</div>
+    </div>
+    <script>
+      document.querySelectorAll('#technical-docs-links a').forEach(link => (link.className = 'button--primary'));
+    </script>
+    {{/if}}
+  </section>
+
+  <section class="product-coverageSection">{{{ region name="product_coverage_section"}}}</section>
+
+  <section class="product-techSpecs">
+    <h2 class="product-section-title">Technical Specs</h2>
+    <ul class="tech-specs"></ul>
+    <script>
+      const fields = [];
+    </script>
+    {{#each product.custom_fields}}
+    <script>
+      fields.push({
+        name: '{{name}}',
+        value: '{{value}}'
+      });
+    </script>
+    {{/each}}
+    <script>
+      const specsList = document.querySelector('.tech-specs');
+      const minTemp = fields.filter(field => field.name === 'min-temp')[0];
+      const maxTemp = fields.filter(field => field.name === 'max-temp')[0];
+      const mixVolume = fields.filter(field => field.name === 'mix-volume')[0];
+      const mixWeight = fields.filter(field => field.name === 'mix-weight')[0];
+      const cureTime = fields.filter(field => field.name === 'cure-time')[0];
+      const tempLi = document.createElement('li');
+      const mixRatioLi = document.createElement('li');
+      const timingLi = document.createElement('li');
+      tempLi.className = 'tech-spec';
+      tempLi.innerHTML = `
+                <div class="tech-spec-header">
+                        <div class="tech-spec-image"><img src="{{cdn 'img/thermometer.png'}}" alt="Glass thermometer icon" width="200" height="200"></div>
+                        <h3>Temperature Application</h3>
+                    </div>
+                    <ul class="tech-spec-list">
+                        ${minTemp ? `<li>Minimum Application Temperature: ${minTemp.value}</li>` : ''}
+                        ${maxTemp ? `<li>Minimum Application Temperature: ${maxTemp.value}</li>` : ''}
+                    </ul>
+                `;
+
+      mixRatioLi.className = 'tech-spec';
+      mixRatioLi.innerHTML = `
+                <div class="tech-spec-header">
+                    <div class="tech-spec-image"><img src="{{cdn 'img/measuring_cup.png'}}" alt="Measuring cup icon" width="200" height="200"></div>
+                        <h3>Mixing Ratio</h3>
+                    </div>
+                    <ul class="tech-spec-list">
+                        ${mixVolume ? `<li>Mix Ratio By Volume: ${mixVolume.value}</li>` : ''}
+                        ${mixWeight ? `<li>Mix Ratio By Weight: ${mixWeight.value}</li>` : ''}
+                    </ul>
+                `;
+
+      timingLi.className = 'tech-spec';
+      timingLi.innerHTML = `
+                <div class="tech-spec-header">
+                    <div class="tech-spec-image"><img src="{{cdn 'img/clock.png'}}" alt="Clock icon" width="200" height="200"></div>
+                        <h3>Technical Timing</h3>
+                    </div>
+                    <ul class="tech-spec-list">
+                        ${cureTime ? `<li>Cure Time: ${cureTime.value}</li>` : ''}
+                    </ul>
+                `;
+      if (minTemp || maxTemp) specsList.appendChild(tempLi);
+      if (mixVolume || mixWeight) specsList.appendChild(mixRatioLi);
+      if (cureTime) specsList.appendChild(timingLi);
+      if (!minTemp && !maxTemp && !mixVolume && !mixWeight && !cureTime) {
+        document.querySelector('.product-techSpecs').style.display = 'none';
+      }
+    </script>
+  </section>
+
+  {{#if product.videos}}
+  <section class="product-videoSection" id="videoSection">
+    <h2 class="product-section-title">Video Resources</h2>
+    <ul class="custom-videoGallery-list">
+      {{#if product.videos.list.[0]}}
+      <li class="custom-videoGallery-item">
+        <div class="custom-videoWrapper">
+          <iframe
+            id="player"
+            class="lazyload"
+            type="text/html"
+            width="640"
+            height="360"
+            frameborder="0"
+            webkitAllowFullScreen
+            mozallowfullscreen
+            allowfullscreen
+            data-src="//www.youtube.com/embed/{{product.videos.list.[0].id}}"
+            data-video-player
+          >
+          </iframe>
+        </div>
+        <h3>Product Highlight</h3>
+      </li>
+      {{/if}} {{#if product.videos.list.[1]}}
+      <li class="custom-videoGallery-item">
+        <div class="custom-videoWrapper">
+          <iframe
+            id="player"
+            class="lazyload"
+            type="text/html"
+            width="640"
+            height="360"
+            frameborder="0"
+            webkitAllowFullScreen
+            mozallowfullscreen
+            allowfullscreen
+            data-src="//www.youtube.com/embed/{{product.videos.list.[1].id}}"
+            data-video-player
+          >
+          </iframe>
+        </div>
+        <h3>Product Tutorial</h3>
+      </li>
+      {{/if}}
+    </ul>
+  </section>
+  {{/if}}
+
+  <div class="container">
+    <div
+      class="yotpo yotpo-main-widget"
+      data-product-id="{{ product.id }}"
+      data-price="{{ product.price.without_tax.value }}"
+      data-currency="{{ currency_selector.active_currency_code }}"
+      data-name="{{ product.title }}"
+      data-url="{{ product.url }}"
+      data-image-url="{{getImage product.main_image}}"
+      data-description="{{ product.description }}"
+    ></div>
+  </div>
+
+  {{> components/elevate/product-tabs }} {{> components/products/schema}}
+</div>
+
+{{/partial}} {{> layout/base}}
+
+<script>
+  (async function getStock() {
+    // fetch all the metallic powder (id: 116) variants
+    const res = await fetch('/graphql', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        Authorization: 'Bearer {{settings.storefront_api.token}}'
+      },
+      body: JSON.stringify({
+        query: `
+                    query getStockValues {
+                        site {
+                            metallicPowder: product(entityId: 116) {
+                                name
+                                variants(first: 150) {
+                                    edges {
+                                        variant: node {
+                                            sku
+                                            entityId
+                                            isPurchasable
+                                            inventory {
+                                                isInStock
+                                            }
+                                            defaultImage {
+                                                url(width: 50, height: 50)
+                                            }
+                                            options {
+                                                edges {
+                                                    option: node {
+                                                        values {
+                                                            edges {
+                                                                node {
+                                                                    label
+                                                                    entityId
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                `
+      })
+    });
+
+    const data = await res.json();
+    // grab only the variants that are purchasable and in stock
+    const variants = inStockAndPurchasableVariants(data.data.site.metallicPowder.variants.edges);
+    // grab the productView-options div to append the elements to
+    const options = document.querySelector('.productView-options');
+    // create a select element for each color selection
+    const selectPrimary = document.createElement('select');
+    const selectSecondary = document.createElement('select');
+    // set the id and class of each color select element
+    selectPrimary.id = 'primary-color';
+    selectPrimary.className = 'form-select form-select--small';
+    selectSecondary.id = 'secondary-color';
+    selectSecondary.className = 'form-select form-select--small';
+    // append each in stock and purchasable variant option to each color select element
+    createOptions(selectPrimary, variants);
+    createOptions(selectSecondary, variants);
+    // create a div element to hold each label + color select element
+    const divPrimary = createInput(selectPrimary, 'primary-color');
+    const divSecondary = createInput(selectSecondary, 'secondary-color');
+    // add each color select div element to the DOM
+    // must append secondary -> primary because each one inserts at the very top of productView-options
+    options.insertBefore(divSecondary, options.firstChild);
+    options.insertBefore(divPrimary, options.firstChild);
+
+    // if the primary color changes
+    document.getElementById('primary-color').addEventListener('change', function (e) {
+      // set the variant image to be visible and set the dropdown border to #333
+      document.getElementById('primary-color-image').style.visibility = 'visible';
+      document.getElementById('primary-color').style.border = '1px solid #333';
+      document.getElementById('primary-color').previousElementSibling.firstElementChild.style.color = '#333';
+
+      for (let child of e.target.children) {
+        if (child.value === e.target.value) {
+          document.getElementById('primary-color-image').src = child.dataset.image;
+
+          if (child.value === '') {
+            document.getElementById('primary-color-image').style.visibility = 'hidden';
+          }
+          return;
+        }
+      }
+    });
+
+    // if the secondary color changes
+    document.getElementById('secondary-color').addEventListener('change', function (e) {
+      // set the variant image to be visible and set the dropdown border to #333
+      document.getElementById('secondary-color-image').style.visibility = 'visible';
+      document.getElementById('secondary-color').style.border = '1px solid #333';
+      document.getElementById('secondary-color').previousElementSibling.firstElementChild.style.color = '#333';
+
+      for (let child of e.target.children) {
+        if (child.value === e.target.value) {
+          document.getElementById('secondary-color-image').src = child.dataset.image;
+
+          if (child.value === '') {
+            document.getElementById('secondary-color-image').style.visibility = 'hidden';
+          }
+          return;
+        }
+      }
+    });
+  })();
+
+  function inStockAndPurchasableVariants(allVariants) {
+    // filter out any variant that isn't in stock or purchasable
+    const variants = allVariants.filter(edge => edge.variant.isPurchasable && edge.variant.inventory.isInStock);
+    // only use skus in this list for the dropdowns
+    const skuList = [
+      'AL31005-15G',
+      'AL31015-15G',
+      '767311985296',
+      '767311985302',
+      'AL31001-15G',
+      'AL31043-15G',
+      'AL31021-15G',
+      '728370322095',
+      'AL31057-15G',
+      'AL31049-15G',
+      'AL31009-15G',
+      'AL31055-15G',
+      'AL31053-15G',
+      'AL31013-15G',
+      'AL31051-15G'
+    ];
+    // filter out the valid variants from the variants above to return only the allowed colors
+    const validVariants = variants.filter(edge => skuList.includes(edge.variant.sku));
+    // return only the variant id and the variant name
+    return validVariants.map(edge => ({
+      variant_id: edge.variant.entityId,
+      image: edge.variant.defaultImage.url,
+      option_name: edge.variant.options.edges[0].option.values.edges[0].node.label,
+      option_id: edge.variant.options.edges[0].option.values.edges[0].node.entityId
+    }));
+  }
+
+  function createOptions(select, allVariants) {
+    // grab the variant_id and variant_name of each variant
+    for (let { variant_id, option_name, option_id, image } of allVariants) {
+      // create a new option element to append to the select element
+      const option = document.createElement('option');
+      // set the option value as the variant_id
+      option.value = `${variant_id}_${option_id}`;
+      // add the image as data-image to display on the option label
+      option.dataset.image = image;
+      // set the option text to the option_name
+      option.innerText = option_name;
+      // append the option to the select element
+      select.appendChild(option);
+    }
+
+    const option = document.createElement('option');
+    option.value = '';
+    option.innerText = 'Choose color';
+    select.insertBefore(option, select.children[0]);
+    select.value = '';
+  }
+
+  function createInput(select, label) {
+    // create a div to hold the label and select element
+    const div = document.createElement('div');
+    // set the class name of the div
+    div.className = 'form-field';
+    // set the label "for" value and inner HTML
+    div.innerHTML = `<p style="display: flex; gap: 10px; align-items: center; font-size: 16px; margin-bottom: 12px;"><label for="${label}" style="text-transform: capitalize; text-align: left; margin-bottom: 0;" class="form-label form-label--alternate form-label--inlineSmall">${label.replace(
+      '-',
+      ' '
+    )}</label><img id="${label}-image" style="width: 50px; height: 50px; aspect-ratio: 1/1; visibility: hidden" src="" width="50" height="50"></p>`;
+    // add the select element to the div
+    div.appendChild(select);
+    // return the div to be appended to the DOM
+    return div;
+  }
+
+  async function createCart() {
+    const qty = document.getElementById('qty[]').value;
+    const id = '{{product.id}}';
+    const primaryColorId = document.getElementById('primary-color');
+    const secondaryColorId = document.getElementById('secondary-color');
+
+    // if both the primary and/or secondary color are not selected, change title and dropdown border to red
+    if (primaryColorId.value === '' && secondaryColorId.value === '') {
+      primaryColorId.style.border = '1px solid red';
+      primaryColorId.previousElementSibling.firstElementChild.style.color = 'red';
+      secondaryColorId.style.border = '1px solid red';
+      secondaryColorId.previousElementSibling.firstElementChild.style.color = 'red';
+      return;
+    } else if (primaryColorId.value === '') {
+      primaryColorId.style.border = '1px solid red';
+      primaryColorId.previousElementSibling.firstElementChild.style.color = 'red';
+      return;
+    } else if (secondaryColorId.value === '') {
+      secondaryColorId.style.border = '1px solid red';
+      secondaryColorId.previousElementSibling.firstElementChild.style.color = 'red';
+      return;
+    }
+
+    try {
+      const body = {
+        line_items: [
+          {
+            quantity: 1 * Number(qty),
+            product_id: 130
+          },
+          {
+            quantity: 6 * Number(qty),
+            product_id: 116,
+            list_price: 0,
+            variant_id: `${primaryColorId.value.split('_')[0]}`,
+            option_selctions: [
+              {
+                option_id: 118,
+                option_value: `${primaryColorId.value.split('_')[1]}`
+              }
+            ]
+          },
+          {
+            quantity: 3 * Number(qty),
+            product_id: 116,
+            list_price: 0,
+            variant_id: `${secondaryColorId.value.split('_')[0]}`,
+            option_selctions: [
+              {
+                option_id: 118,
+                option_value: `${secondaryColorId.value.split('_')[1]}`
+              }
+            ]
+          }
+        ],
+        cart_id: '{{cart_id}}'
+      };
+
+      const options = {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json'
+        },
+        body: JSON.stringify(body)
+      };
+
+      document.getElementById('form-action-addToCart').value = 'Adding to cart...';
+
+      const res = await fetch('https://eodjhle2p85foht.m.pipedream.net', options);
+      const data = await res.json();
+      if (data.status === 400) throw Error(data.error);
+      document.getElementById('form-action-addToCart').value = 'Added to Cart!';
+      window.location.replace(data.cart_url);
+    } catch (err) {
+      console.error(err);
+      // reset the text on the add to cart button
+      document.getElementById('form-action-addToCart').value = 'Add to Cart';
+      // update the modal to show a warning about an add to cart error
+      document.getElementById('alert-modal').style.visibility = 'visible';
+      document.getElementById('alert-modal').style.display = 'block';
+      document.querySelector('#alert-modal .modal-content').innerHTML =
+        'Something went wrong. Please try again.<br>Contact us if the issue continues.';
+      // close the modal and reset it's values
+      document.querySelector('#alert-modal .confirm').addEventListener('click', function (e) {
+        document.getElementById('alert-modal').style.display = 'none';
+        document.getElementById('alert-modal').style.visibility = 'hidden';
+        document.querySelector('#alert-modal .modal-content').innerHTML = null;
+      });
+    }
+  }
+
+  document.getElementById('form-action-addToCart').addEventListener('click', function (e) {
+    e.preventDefault();
+    createCart();
+  });
+</script>
+
+<script>
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+      e.preventDefault();
+
+      const element = document.querySelector(this.getAttribute('href'));
+      const headerOffset = document.querySelector('.header').getBoundingClientRect().height;
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset - 20;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    });
+  });
+</script>
+
+<script type="text/javascript">
+  var _learnq = _learnq || [];
+
+  var product_categories = [];
+  {{#each product.category}}
+  product_categories.push('{{this}}')
+  {{/each}}
+
+  var item = {
+  Name: "{{product.title}}",
+  ProductID: "{{product.id}}",
+  ImageURL: "{{getImage product.main_image 'product_size' (cdn theme_settings.default_image_product)}}",
+  URL: "{{product.url}}",
+  Brand: "{{product.brand.name}}",
+  Categories: product_categories,
+  Price: "{{product.price.without_tax.value}}",
+  CompareAtPrice:"{{product.price.rrp_without_tax.value}}"
+  };
+
+  _learnq.push(['track', 'Viewed Product', item]);
+
+  _learnq.push(['trackViewedItem', {
+  Title: item.Name,
+  ItemId: item.ProductID,
+  Categories: item.Categories,
+  ImageUrl: item.ImageURL,
+  Url: item.URL,
+  Metadata: {
+  Brand: item.Brand,
+  Price: item.Price,
+  CompareAtPrice: item.CompareAtPrice
+  }
+  }]);
+</script>

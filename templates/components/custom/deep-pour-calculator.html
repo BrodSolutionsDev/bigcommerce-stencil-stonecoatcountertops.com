@@ -1,0 +1,97 @@
+
+  <div class="calculator-section-heading">
+  </div>
+<div class="calculator-section-coverage">
+    {{#each fields}}
+      {{#if name '==' '1 Gallon Kit'}}
+        <div class="kit-size">
+          <img src="{{cdn 'img/info-icons/one_gallon_bucket.png'}}" alt="One gallon kit">
+          <!-- <span class="equals">=</span> -->
+          <img src="{{cdn 'img/info-icons/square_footage.png'}}" alt="Square footage icon">
+          <div class="covers">
+            <p class="value">{{value}}</p>
+            <p>Sq Ft</p>
+          </div>
+        </div>
+      {{/if}}
+      {{#if name '==' '1/2 Gallon Kit'}}
+        <div class="kit-size">
+          <img src="{{cdn 'img/info-icons/half_gallon_bucket.png'}}" alt="Half gallon kit">
+          <!-- <span class="equals">=</span> -->
+          <img src="{{cdn 'img/info-icons/square_footage.png'}}" alt="Square footage icon">
+          <div class="covers">
+            <p class="value">{{value}}</p>
+            <p>Sq Ft</p>
+          </div>
+        </div>
+      {{/if}}
+    {{/each}}
+<div class="epoxy-calculator">
+    <h4>Volume Calculator</h4>
+    <!-- length x width inputs -->
+    <div class="epoxy-calculator-inputs flex-row">
+        <div class="epoxy-calculator-input">
+            <label for="length">Length (inches)</label>
+            <input type="number" id="deepPourLength" name="length" placeholder="inches" />
+        </div>
+        <div class="epoxy-calculator-input">
+            <label for="width">Width (inches)</label>
+            <input type="number" id="deepPourWidth" name="width" placeholder="inches" />
+        </div>
+        <div class="epoxy-calculator-input">
+            <label for="depth">Depth (inches)</label>
+            <input type="number" id="deepPourDepth" name="depth" placeholder="inches">
+        </div>
+        <!-- submit and calculate -->
+        <div class="epoxy-calculator-submit">
+            <button class="scc-button-action button button--small" id="deepPourCalculate">Calculate</button>
+        </div>
+        </div>
+        
+        <!-- results -->
+        <div class="epoxy-calculator-results flex-row">
+            <div class="epoxy-calculator-results-amount">
+                <h5>US Fluid Ounces Needed: <span id="results-deep-pour-square-feet">0</span></h5>
+            </div>
+            <div class="epoxy-calculator-results-amount">
+                <h5>Gallons Needed: <span id="results-deep-pour-gallons">0</span></h5>
+            </div>
+            <h5><em>Length (in) &times; Width (in) &times; Depth (in) &divide; 231 = Volume (Gallons)</em></h5>
+        </div>
+        <script>
+            // get inputs
+            const deepPourLength = document.getElementById('deepPourLength');
+            const deepPourWidth = document.getElementById('deepPourWidth');
+            const deepPourDepth = document.getElementById('deepPourDepth');
+            const deepPourCalculate = document.getElementById('deepPourCalculate');
+            // get results
+            const resultsDeepPourSquareFeet = document.getElementById('results-deep-pour-square-feet');
+            const resultsDeepPourGallons = document.getElementById('results-deep-pour-gallons');
+            // calculate square feet
+            function calculateDeepPourSquareFeet() {
+                const cubicInches = deepPourLength.value* deepPourWidth.value * deepPourDepth.value;
+                const ounces = cubicInches * 0.554;
+                resultsDeepPourSquareFeet.innerHTML = ounces.toFixed(2);
+            }
+            // calculate gallons
+            function calculateDeepPourGallons() {
+                //const squareFeet = deepPourLength.value * deepPourWidth.value * (deepPourDepth.value / 12);
+                //const gallons = squareFeet / 20;
+                //resultsDeepPourGallons.innerHTML = gallons.toFixed(2);
+                // Tanner quick edits
+                const cubicInches = deepPourLength.value * deepPourWidth.value * deepPourDepth.value;
+                const gallons = cubicInches / 231;
+                resultsDeepPourGallons.innerHTML = gallons.toFixed(2);
+            }
+            // calculate square feet and gallons
+            function calculateDeepPourAll() {
+                calculateDeepPourSquareFeet();
+                calculateDeepPourGallons();
+            }
+            // calculate on click
+            deepPourCalculate.addEventListener('click', calculateDeepPourAll);
+        </script>
+
+</div>
+</div>
+

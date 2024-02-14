@@ -1,0 +1,282 @@
+<div id="results" class="flex-col step" style="display: none">
+  <h2 class="calculator-heading">Results</h2>
+  <div class="step-wrapper flex-row">
+    <div class="step-wrapper__left">
+      <div id="project-requirements">
+        <h3>Project Requirements</h3>
+        <p>
+          <span class="result-title">Total Square Footage:</span>
+          <span id="sqft-results"></span> sqft
+        </p>
+        <p class="kit-coverage-results">
+          <span class="result-title">Total Project Coverage:</span>
+          <span id="coverage-results"></span> sqft
+        </p>
+        <p>
+          <span class="result-title">Project Surface:</span>
+          <span id="project_type-results"></span>
+        </p>
+        <p class="undercoat-color-results">
+          <span class="result-title">Undercoat Color:</span>
+          <span id="undercoat_color-results"></span>
+        </p>
+        <p>
+          <span class="result-title">Color System:</span>
+          <span id="project_system-results"></span>
+        </p>
+        <p class="custom-color-results">
+          <span class="result-title">Primary Color:</span>
+          <span id="primary_color-results"></span>
+        </p>
+        <p class="custom-color-results">
+          <span class="result-title">Secondary Color:</span>
+          <span id="secondary_color-results"></span>
+        </p>
+        <p class="custom-color-results">
+          <span class="result-title">Accent Color:</span>
+          <span id="accent_color-results"></span>
+        </p>
+        <p>
+          <span class="result-title">Finish:</span>
+          <span id="project_finish-results"></span>
+        </p>
+        <button id="pdf">Download PDF Instructions</button>
+      </div>
+    </div>
+    <div class="step-wrapper__right flex-col">
+      <h3>Products in Kit</h3>
+      <div id="results-cart-list" class="flex-col"></div>
+      <div id="add-to-cart" class="flex-row">
+        <div id="project-cart-buttons">
+          <button id="atc">Add to Cart</button>
+          <button id="sfl">Save for Later</button>
+        </div>
+        <p id="kit-total"></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let addToCartArr = [];
+
+  const callback = async (mutationList, observer) => {
+    // don't run any code unless the currentStep is on 4
+    if (currentStep !== 5) return;
+    addToCartArr = [];
+    // set the add to cart text to Add to Cart every time this function is ran
+    document.getElementById('atc').innerText = 'Add to Cart';
+    // set the add to cart button to "not disabled" every time this function is ran
+    document.getElementById('atc').disabled = false;
+    // grab the requirements from the localStorage object
+    const requirements = JSON.parse(localStorage.getItem('project-requirements'));
+    // loop over the requirements to append to the DOM (project requirements list)
+    for (const [key, value] of Object.entries(requirements)) {
+      if (key !== 'sqft') {
+        // if the key does not equal sqft
+        // destructure the name and sku from the object entry
+        const { name, sku } = value;
+        // if there is no value, skip this iteration
+        if (value === '') continue;
+        // display the selected requirement next to the name in the requirement list (ex: Project Surface: Existing Countertop)
+        document.getElementById(`${key}-results`).innerHTML = name;
+      } else {
+        // if the key DOES equal sqft, set the number as the name in the requirment list (ex: Total Square Footage: 22 sqft)
+        document.getElementById(`${key}-results`).innerHTML = value;
+      }
+    }
+
+    // Show/hide the custom color selections from the requirement list in the DOM if custom colors were/were not chosen
+    if (requirements['project_system'].name !== 'Custom') {
+      document.querySelectorAll('.custom-color-results').forEach(color => (color.style.display = 'none'));
+      document.querySelector('.undercoat-color-results').style.display = 'none';
+      document.querySelector('.kit-coverage-results').style.display = 'block';
+    } else {
+      document.querySelectorAll('.custom-color-results').forEach(color => (color.style.display = 'block'));
+      document.querySelector('.undercoat-color-results').style.display = 'block';
+      document.querySelector('.kit-coverage-results').style.display = 'none';
+    }
+
+    // update coverage results based on the kit coverage
+    if (requirements.sqft <= 10) {
+      document.getElementById('coverage-results').innerText = '10';
+    } else if (requirements.sqft <= 20) {
+      document.getElementById('coverage-results').innerText = '20';
+    } else if (requirements.sqft <= 40) {
+      document.getElementById('coverage-results').innerText = '40';
+    } else if (requirements.sqft <= 80) {
+      document.getElementById('coverage-results').innerText = '80';
+    }
+
+    const detailsArr = [];
+    for (const [key, value] of Object.entries(requirements)) {
+      if (key === 'undercoat_color' && value.name === 'Grey') {
+        continue;
+      }
+      detailsArr.push(getProductDetails(value.sku));
+    }
+
+    // push the undercoat_color requirements to the details array
+    const undercoatColor = requirements['undercoat_color'];
+    if (undercoatColor.name) {
+      // if grey is the chosen color...
+      if (undercoatColor.sku.includes('__')) {
+        detailsArr.push(getProductDetails(undercoatColor.sku.split('__')[0]));
+        detailsArr.push(getProductDetails(undercoatColor.sku.split('__')[1]));
+      } else {
+        // otherwise, add the chosen color (black or white)
+        detailsArr.push(getProductDetails(undercoatColor.sku));
+      }
+    }
+
+    // getProductDetails returns a promise, return an array of settled promises
+    const settled = await Promise.allSettled(detailsArr);
+    // filter out the results with values from the settled array
+    const results = settled.filter(result => result.value);
+    // clear the cart list to append updated values every time this is ran
+    document.getElementById('results-cart-list').innerHTML = null;
+    // return all the skus from the requirements
+    const reqValues = getValuesFromRequirements(Object.entries(requirements));
+
+    function getValuesFromRequirements(values) {
+      // store the skus in a temp array to return
+      const skus = [];
+      // loop over the requirement results
+      for (const [key, value] of values) {
+        // if the value is the sq ft requirement, continue in the loop
+        if (typeof value === 'number') continue;
+        // destructure the name and sku from the requirement
+        const { name, sku } = value;
+        // if either name or sku is null, continue in the loop
+        if (name === null || sku === null || sku === undefined) continue;
+        // console.log('SKU: ', sku);
+        if (sku.includes('__')) {
+          // grey undercoat
+          skus.push({
+            sku: sku.split('__')[0],
+            name: name,
+            key: key
+          });
+          skus.push({
+            sku: sku.split('__')[1],
+            name: name,
+            key: key
+          });
+        } else {
+          // everything else
+          skus.push({
+            sku: sku,
+            name: name,
+            key: key
+          });
+        }
+      }
+      return skus;
+    }
+
+    for (const { sku, name, key } of reqValues) {
+      if (sku === '') continue;
+      if (JSON.parse(localStorage.getItem('project-requirements'))['project_system'].name !== 'Custom') {
+        if (key === 'primary_color' || key === 'secondary_color' || key === 'accent_color') continue;
+      }
+      // get the value from the GraphQL results from the sku in the requirements
+      const { value } = results.filter(result => result.value.sku === sku)[0];
+      console.log('Value: ', value);
+      // get the variant from the value that matches the sku in the requirements
+      const variant = value.variants.filter(variant => variant.sku === value.sku)[0];
+      console.log('Variant: ', variant);
+      // add the color quantity based on color choice
+      let qty;
+      if (key === 'primary_color') qty = 6;
+      else if (key === 'secondary_color' || key === 'accent_color') qty = 3;
+      else qty = 1;
+      // create a div to add to the cart list
+      const cartItem = document.createElement('div');
+      cartItem.className = 'results-cart-item';
+      cartItem.dataset.price = value.sale_price ? value.sale_price : value.default_price;
+      // set the innerHTML of the div + add option line if there is a variant option
+      cartItem.innerHTML = `
+        <img class="results-cart-item__image" src="${value.image}" />
+        <h4 class="results-cart-item__title"><a href="${value.url}">${value.name.toUpperCase()}</a></h4>
+        ${
+          variant.options.length
+            ? `<p class="results-cart-item__option">${variant.options[0].name}: ${variant.options[0].values[0].label}</p>`
+            : ''
+        }
+        <p class="results-cart-item__quantity">Quantity: ${qty}</p>
+        `;
+      // append the div to the cart list
+      document.getElementById('results-cart-list').appendChild(cartItem);
+      // add the data to the cart array
+      if (variant.options.length) {
+        // if the variant has options
+        addToCartArr.push({
+          product_id: value.id,
+          variant: {
+            option_id: variant.options[0].option_id,
+            value_id: variant.options[0].values[0].value_id
+          }
+        });
+      } else {
+        // if the variant does NOT have options
+        addToCartArr.push({
+          product_id: value.id,
+          variant: null
+        });
+      }
+    }
+
+    // ==========================================
+    // SAVE FOR LATER
+    // ==========================================
+    // Assuming you have a button with id 'sfl'
+    document.getElementById('sfl').addEventListener('click', function () {
+      // present a modal with Email and Name fields
+
+      // Your project requirements data
+      const projectRequirements = {
+        // @ BRAD:  what else needs to be included?
+        // Cart Object?
+        // Customer ID?
+        // Referral URL?
+        // For now, the API will accept all of the body data as a single object, so please include all necessary data here
+        store_hash: 'fy21dwtsxg',
+        project_data: JSON.parse(localStorage.getItem('project-requirements')),
+        cart_array: addToCartArr
+      };
+
+      // Post data to the endpoint
+      fetch('https://my.polytek.com/api/calculation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(projectRequirements)
+      })
+        .then(response => response.json())
+        .then(data => console.log(data))
+        .catch(error => {
+          console.error('Error:', error);
+        });
+    });
+
+    // loop over each total using the data-price attribute
+    const total = Array.from(document.querySelectorAll('[data-price]'))
+      .map(elem => Number(elem.dataset.price))
+      .reduce((acc, curr) => acc + curr);
+    // set the total in the DOM
+    document.getElementById('kit-total').innerHTML = `Kit Total: $${total.toFixed(2)}`;
+    // fire off the addToCart function when the add to cart button is clicked
+    document.getElementById('atc').addEventListener('click', function (e) {
+      addToCart(addToCartArr);
+    });
+  };
+
+  // Create an observer instance linked to the callback function
+  const observer = new MutationObserver(callback);
+
+  // Start observing the target node for configured mutations
+  observer.observe(document.getElementById('progress-bar'), { attributes: true, childList: true, subtree: true });
+</script>
+
+<script></script>

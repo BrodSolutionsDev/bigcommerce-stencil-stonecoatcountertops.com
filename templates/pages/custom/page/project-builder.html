@@ -1,0 +1,690 @@
+{{#partial "page"}}
+<div id="wrapper">
+  <!-- 0) Choose project -->
+  {{> components/custom/project-builder/choose-project }}
+
+  <div id="calculator" class="flex-col" style="display: none">
+    {{> components/custom/project-builder/layout/header }}
+    <div id="calculator-body">
+      <!-- 1) Size -->
+      {{> components/custom/project-builder/countertop/step1 }}
+      <!-- 2) Project type -->
+      {{> components/custom/project-builder/countertop/step2 }}
+      <!-- 3) Surface -->
+      {{> components/custom/project-builder/countertop/step3 }}
+      <!-- 4) Finish -->
+      {{> components/custom/project-builder/countertop/step4 }}
+      <!-- 5) Results -->
+      {{> components/custom/project-builder/countertop/step5 }}
+    </div>
+    <button class="mobile-next continue calculator-button">Next</button>
+  </div>
+</div>
+
+{{{region name="project_builder_above_body"}}} {{{ body }}} {{{region name="project_builder_below_body"}}}
+
+<script>
+  const intersectionObserver = new IntersectionObserver(entries => {
+    // If intersectionRatio is 0, the target is out of view
+    // and we do not need to do anything.
+    for (const entry of entries) {
+      if (entry.intersectionRatio <= 0) continue;
+      const target = entry.target;
+      const step = target.id.split('-')[2];
+
+      openOrCloseModal(step);
+    }
+  });
+  // start observing
+  document.querySelectorAll('.open-modal-text').forEach(element => {
+    intersectionObserver.observe(element);
+  });
+
+  function openOrCloseModal(step) {
+    // dynamically select the elements based on the current step
+    const closeModalbutton = document.getElementById(`close-choose-${step}-modal`);
+    const chooseModal = document.getElementById(`help-choose-${step}-modal`);
+    const openModalButton = document.getElementById(`help-choose-${step}`);
+
+    openModalButton?.addEventListener('click', function () {
+      chooseModal.setAttribute('open', null);
+    });
+
+    closeModalbutton?.addEventListener('click', function () {
+      chooseModal.removeAttribute('open');
+    });
+  }
+
+  // get the chosen system from the dropdown
+  const systemSelect = document.getElementById('system');
+  let systemChoice = Array.from(document.getElementById('system').children).filter(
+    child => child.value === document.getElementById('system').value
+  )[0];
+
+  // localStorage interaction functions
+  function pbUpdateStorage(key, value) {
+    const projectRequirements = JSON.parse(localStorage.getItem('project-requirements'));
+    projectRequirements[key] = value;
+    localStorage.setItem('project-requirements', JSON.stringify(projectRequirements));
+  }
+  function pbGetStorageByKey(key) {
+    const projectRequirements = JSON.parse(localStorage.getItem('project-requirements'));
+    return projectRequirements[key];
+  }
+  function pbGetStorage() {
+    return JSON.parse(localStorage.getItem('project-requirements'));
+  }
+
+  // sections
+  const calculator = document.getElementById('calculator');
+  const amount = document.getElementById('amount');
+  const state = document.getElementById('stateAndUndercoat');
+  const finish = document.getElementById('colorAndFinish');
+  const results = document.getElementById('results');
+  const projectSelection = document.getElementById('choose-project');
+  const helpModal = document.getElementById('help-calculate-modal');
+  const projectChoices = document.getElementById('project-choices');
+  // options
+  const countertopProject = document.getElementById('countertop-project');
+  // buttons
+  const previous = document.getElementById('previous');
+  const closeCalculateModal = document.getElementById('close-calculate-modal');
+  const calculate = document.getElementById('calculate-amount-button');
+  const helpCalculate = document.getElementById('help-calculate');
+  // inputs
+  const totalSqFt = document.getElementById('total-sqft');
+
+  // starting requirements
+  const projectRequirements = {
+    sqft: 0,
+    project_type: {
+      name: null,
+      sku: null
+    },
+    undercoat_color: {
+      name: null,
+      sku: null
+    },
+    project_system: {
+      name: systemChoice.value,
+      sku: systemChoice.dataset.sku
+    },
+    primary_color: {
+      name: null,
+      sku: null
+    },
+    secondary_color: {
+      name: null,
+      sku: null
+    },
+    accent_color: {
+      name: null,
+      sku: null
+    },
+    project_finish: {
+      name: null,
+      sku: null
+    }
+  };
+
+  helpCalculate.addEventListener('click', function () {
+    helpModal.setAttribute('open', null);
+  });
+
+  closeCalculateModal.addEventListener('click', function () {
+    helpModal.removeAttribute('open');
+  });
+
+  localStorage.setItem('project-requirements', JSON.stringify(projectRequirements));
+
+  function updateCalculatorHeaderSteps(step) {
+    // grab the step indicator from the project builder header
+    const stepIndicator = document.querySelector(`[data-step="${step}"]`);
+    if (!stepIndicator) return;
+    let currentStepIndicator = stepIndicator;
+    const steps = [];
+    while (true) {
+      // if there is no previous step, break out of the loop
+      if (!currentStepIndicator.previousElementSibling) break;
+      // push the last step to the steps array when the "next" button is pressed
+      steps.push(currentStepIndicator.previousElementSibling);
+      // update the currentStepIndicator to run the while loop again
+      currentStepIndicator = currentStepIndicator.previousElementSibling;
+    }
+    // when the step is updated, remove all the complete classes and update the innerHTML of the step indicator
+    document.querySelectorAll('.complete').forEach((step, index) => {
+      step.classList.remove('complete');
+      step.innerHTML = index + 1;
+    });
+    // for every step in the steps array, update it's classList to include "complete" and change it's inneerHTML to a checkmark
+    steps.forEach(step => {
+      step.classList.add('complete');
+      step.innerHTML = '&check;';
+    });
+    // remove all current-step classes
+    document.querySelectorAll('.current-step').forEach(step => step.classList.remove('current-step'));
+    // set the current step class on the current step
+    stepIndicator.classList.add('current-step');
+  }
+
+  // the current step in the calculator
+  let currentStep = 0;
+
+  // handle which step to show in the calculator
+  function calculatorProgress(step = 0) {
+    let currentStep = step;
+    // when the next button is hit, run the updateCalculatorHeaderSteps function
+    updateCalculatorHeaderSteps(step);
+    // dynamically show each section based on the current step
+    switch (currentStep) {
+      case 0:
+        projectSelection.style.display = 'flex';
+        calculator.style.display = 'none';
+        document.getElementById('tempColorChoice').style.display = 'none';
+        amount.style.display = 'none';
+        state.style.display = 'none';
+        finish.style.display = 'none';
+        results.style.display = 'none';
+        document.querySelector('.mobile-next').style.display = 'none';
+        break;
+      case 1:
+        projectSelection.style.display = 'none';
+        calculator.style.display = 'flex';
+        document.getElementById('tempColorChoice').style.display = 'none';
+        amount.style.display = 'flex';
+        state.style.display = 'none';
+        finish.style.display = 'none';
+        results.style.display = 'none';
+        document.querySelector('.mobile-next').style.display = 'block';
+        break;
+      case 2:
+        projectSelection.style.display = 'none';
+        calculator.style.display = 'flex';
+        document.getElementById('tempColorChoice').style.display = 'flex';
+        amount.style.display = 'none';
+        state.style.display = 'none';
+        finish.style.display = 'none';
+        results.style.display = 'none';
+        document.querySelector('.mobile-next').style.display = 'block';
+        break;
+      case 3:
+        projectSelection.style.display = 'none';
+        calculator.style.display = 'flex';
+        document.getElementById('tempColorChoice').style.display = 'none';
+        amount.style.display = 'none';
+        state.style.display = 'flex';
+        finish.style.display = 'none';
+        results.style.display = 'none';
+        document.querySelector('.mobile-next').style.display = 'block';
+        break;
+      case 4:
+        projectSelection.style.display = 'none';
+        calculator.style.display = 'flex';
+        document.getElementById('tempColorChoice').style.display = 'none';
+        amount.style.display = 'none';
+        state.style.display = 'none';
+        finish.style.display = 'flex';
+        results.style.display = 'none';
+        document.querySelector('.mobile-next').style.display = 'block';
+        break;
+      case 5:
+        projectSelection.style.display = 'none';
+        calculator.style.display = 'flex';
+        document.getElementById('tempColorChoice').style.display = 'none';
+        amount.style.display = 'none';
+        state.style.display = 'none';
+        finish.style.display = 'none';
+        results.style.display = 'flex';
+        document.querySelector('.mobile-next').style.display = 'none';
+        break;
+      default:
+        console.log("you're not supposed to be here!");
+    }
+  }
+
+  // go back a step
+  previous.addEventListener('click', function (e) {
+    e.preventDefault();
+
+    // if the step is already at 0, do nothing
+    if (currentStep <= 0) return;
+
+    // reduce the currentStep by 1 step
+    currentStep--;
+    // update the calculator progress
+    calculatorProgress(currentStep);
+  });
+
+  // go to next step
+  document.getElementById('calculator').addEventListener('click', function (e) {
+    e.preventDefault();
+    if (!e.target.closest('.continue')) return;
+    currentStep++;
+    calculatorProgress(currentStep);
+  });
+
+  // ========================================
+  // 0. Listen for project selection
+  // ========================================
+  projectChoices.addEventListener('click', function (e) {
+    e.preventDefault();
+
+    const project = e.target.closest('.start-project');
+    if (!project) return;
+
+    document.getElementById('project-type').innerHTML = `<p>Project: ${project.dataset.project}</p>`;
+    // set the step to 1 since a project has been chosen
+    currentStep = 1;
+    // // update the calculator progress
+    calculatorProgress(currentStep);
+  });
+
+  // from w3 schools
+  function openShape(evt, cityName) {
+    var i, tabcontent, tablinks;
+    tabcontent = document.getElementsByClassName('tabcontent');
+    for (i = 0; i < tabcontent.length; i++) {
+      tabcontent[i].style.display = 'none';
+    }
+    tablinks = document.getElementsByClassName('tablinks');
+    for (i = 0; i < tablinks.length; i++) {
+      tablinks[i].className = tablinks[i].className.replace(' active', '');
+    }
+    document.getElementById(cityName).style.display = 'flex';
+    evt.currentTarget.className += ' active';
+  }
+</script>
+
+<script>
+  async function getProductDetails(sku) {
+    if (!sku) return;
+
+    const res = await fetch('/graphql', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer {{settings.storefront_api.token}}'
+      },
+      body: JSON.stringify({
+        query: `
+        {
+          site {
+            product(sku: "${sku}") {
+              entityId
+              name
+              path
+              sku
+              defaultImage {
+                tiny_thumbnail: url(width: 80)
+              }
+              prices {
+                price {
+                  value
+                }
+                salePrice {
+                  value
+                }
+              }
+              inventory {
+                isInStock
+              }
+              variants(first: 150) {
+                edges {
+                  node {
+                    prices {
+                      basePrice {
+                        value
+                      }
+                    }
+                    sku
+                    entityId
+                    isPurchasable
+                    options {
+                      edges {
+                        node {
+                          displayName
+                          entityId
+                          values {
+                            edges {
+                              node {
+                                entityId
+                                label
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }`
+      })
+    });
+
+    const { data } = await res.json();
+    const { product } = data.site;
+
+    return {
+      id: product.entityId,
+      image: product.defaultImage.tiny_thumbnail,
+      in_stock: product.inventory.isInStock,
+      url: product.path,
+      sku: product.sku,
+      name: product.name,
+      default_price: product.prices.price.value,
+      sale_price: product.prices.salePrice?.value,
+      variants: product.variants.edges.map(({ node }) => {
+        return {
+          sku: node.sku,
+          variant_id: node.entityId,
+          purchasable: node.isPurchasable,
+          price: node.prices.basePrice.value,
+          options: node.options.edges?.map(({ node }) => {
+            return {
+              name: node.displayName,
+              option_id: node.entityId,
+              values: node.values.edges.map(({ node }) => {
+                return {
+                  value_id: node.entityId,
+                  label: node.label
+                };
+              })
+            };
+          })
+        };
+      })
+    };
+  }
+</script>
+
+<script>
+  function addToCart(cartArr) {
+    // grab the last item in the cart
+    const item = cartArr[cartArr.length - 1];
+    // create a new formData object
+    const formData = new FormData();
+    formData.append('action', 'add');
+    // set the product ID
+    formData.append('product_id', item.product_id);
+    // set the quantity
+    formData.append('qty[]', 1);
+    // if the product has a variant...
+    if (item.variant) {
+      // set the attribute to the option id and the value to the variant value id
+      formData.append(`attribute[${item.variant.option_id}]`, item.variant.value_id);
+    }
+    // remove the last item from the array
+    cartArr.pop();
+    // add the item to the cart
+    window.stencilUtils.api.cart.itemAdd(formData, (err, res) => {
+      // if the cart array is still full...
+      if (cartArr.length > 0) {
+        document.querySelector('.cart-quantity').innerText =
+          Number(document.querySelector('.cart-quantity').innerText) + 1;
+        // set the innerText of the add to cart button to show it's still working
+        document.getElementById('atc').innerText = 'Adding to Cart';
+        // run the function again
+        return addToCart(cartArr);
+      } else {
+        // if the cart array is empty, update the add to cart text to show it's finished
+        document.getElementById('atc').innerText = 'Added to Cart!';
+        // disable the button to prevent users from clicking it multiple times
+        document.getElementById('atc').disabled = true;
+      }
+    });
+  }
+
+  async function getStock() {
+    // fetch all the metallic powder (id: 116) variants
+    const res = await fetch('/graphql', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        Authorization: 'Bearer {{settings.storefront_api.token}}'
+      },
+      body: JSON.stringify({
+        query: `
+                    query getStockValues {
+                        site {
+                            metallicPowder: product(entityId: 116) {
+                                name
+                                variants(first: 150) {
+                                    edges {
+                                        variant: node {
+                                            sku
+                                            entityId
+                                            isPurchasable
+                                            inventory {
+                                                isInStock
+                                            }
+                                            defaultImage {
+                                                url(width: 50, height: 50)
+                                            }
+                                            options {
+                                                edges {
+                                                    option: node {
+                                                        values {
+                                                            edges {
+                                                                node {
+                                                                    label
+                                                                    entityId
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                `
+      })
+    });
+
+    const data = await res.json();
+    // grab only the variants that are purchasable and in stock
+    const variants = inStockAndPurchasableVariants(data.data.site.metallicPowder.variants.edges);
+    // grab the productView-options div to append the elements to
+    const options = document.getElementById('custom-color-dropdowns');
+    // create a select element for each color selection
+    const selectPrimary = document.createElement('select');
+    const selectSecondary = document.createElement('select');
+    const selectAccent = document.createElement('select');
+    // set the id and class of each color select element
+    selectPrimary.id = 'primary-color';
+    // selectPrimary.className = 'form-select form-select--small';
+    selectSecondary.id = 'secondary-color';
+    // selectSecondary.className = 'form-select form-select--small';
+    selectAccent.id = 'accent-color';
+    // selectAccent.className = 'form-select form-select--small';
+    // append each in stock and purchasable variant option to each color select element
+    createOptions(selectPrimary, variants);
+    createOptions(selectSecondary, variants);
+    createOptions(selectAccent, variants);
+    // create a div element to hold each label + color select element
+    const divPrimary = createInput(selectPrimary, 'primary-color');
+    const divSecondary = createInput(selectSecondary, 'secondary-color');
+    const divAccent = createInput(selectAccent, 'accent-color');
+    // add each color select div element to the DOM
+    // must append secondary -> primary because each one inserts at the very top of productView-options
+    options.insertBefore(divAccent, options.firstChild);
+    options.insertBefore(divSecondary, options.firstChild);
+    options.insertBefore(divPrimary, options.firstChild);
+
+    // if the primary color changes
+    document.getElementById('primary-color').addEventListener('change', function (e) {
+      // set the variant image to be visible and set the dropdown border to #333
+      document.getElementById('primary-color-image').style.visibility = 'visible';
+      document.getElementById('primary-color').style.border = '1px solid #333';
+      document.getElementById('primary-color').previousElementSibling.firstElementChild.style.color = '#333';
+
+      for (let child of e.target.children) {
+        if (child.value === e.target.value) {
+          document.getElementById('primary-color-image').src = child.dataset.image;
+
+          if (child.value === '') {
+            document.getElementById('primary-color-image').style.visibility = 'hidden';
+          }
+          continue;
+        }
+      }
+
+      let primaryChoice = Array.from(e.target.children).filter(child => child.value === e.target.value)[0];
+
+      pbUpdateStorage('primary_color', {
+        name: primaryChoice.value,
+        sku: primaryChoice.dataset.sku
+      });
+    });
+
+    // if the secondary color changes
+    document.getElementById('secondary-color').addEventListener('change', function (e) {
+      // set the variant image to be visible and set the dropdown border to #333
+      document.getElementById('secondary-color-image').style.visibility = 'visible';
+      document.getElementById('secondary-color').style.border = '1px solid #333';
+      document.getElementById('secondary-color').previousElementSibling.firstElementChild.style.color = '#333';
+
+      for (let child of e.target.children) {
+        if (child.value === e.target.value) {
+          document.getElementById('secondary-color-image').src = child.dataset.image;
+
+          if (child.value === '') {
+            document.getElementById('secondary-color-image').style.visibility = 'hidden';
+          }
+          continue;
+        }
+      }
+
+      let secondaryChoice = Array.from(e.target.children).filter(child => child.value === e.target.value)[0];
+
+      pbUpdateStorage('secondary_color', {
+        name: secondaryChoice.value,
+        sku: secondaryChoice.dataset.sku
+      });
+    });
+
+    // if the accent color changes
+    document.getElementById('accent-color').addEventListener('change', function (e) {
+      // set the variant image to be visible and set the dropdown border to #333
+      document.getElementById('accent-color-image').style.visibility = 'visible';
+      document.getElementById('accent-color').style.border = '1px solid #333';
+      document.getElementById('accent-color').previousElementSibling.firstElementChild.style.color = '#333';
+
+      for (let child of e.target.children) {
+        if (child.value === e.target.value) {
+          document.getElementById('accent-color-image').src = child.dataset.image;
+
+          if (child.value === '') {
+            document.getElementById('accent-color-image').style.visibility = 'hidden';
+          }
+          continue;
+        }
+      }
+
+      let accentChoice = Array.from(e.target.children).filter(child => child.value === e.target.value)[0];
+
+      pbUpdateStorage('accent_color', {
+        name: accentChoice.value,
+        sku: accentChoice.dataset.sku
+      });
+    });
+  }
+
+  function inStockAndPurchasableVariants(allVariants) {
+    // filter out any variant that isn't in stock or purchasable
+    const variants = allVariants.filter(edge => edge.variant.isPurchasable && edge.variant.inventory.isInStock);
+    // only use skus in this list for the dropdowns
+    const skuList = [
+      'AL31005-15G',
+      'AL31015-15G',
+      '767311985296',
+      '767311985302',
+      'AL31001-15G',
+      'AL31043-15G',
+      'AL31021-15G',
+      '728370322095',
+      'AL31057-15G',
+      'AL31049-15G',
+      'AL31009-15G',
+      'AL31055-15G',
+      'AL31053-15G',
+      'AL31013-15G',
+      'AL31051-15G'
+    ];
+    // filter out the valid variants from the variants above to return only the allowed colors
+    const validVariants = variants.filter(edge => skuList.includes(edge.variant.sku));
+    // return only the variant id and the variant name
+    return validVariants.map(edge => ({
+      variant_id: edge.variant.entityId,
+      sku: edge.variant.sku,
+      image: edge.variant.defaultImage.url,
+      option_name: edge.variant.options.edges[0].option.values.edges[0].node.label,
+      option_id: edge.variant.options.edges[0].option.values.edges[0].node.entityId
+    }));
+  }
+
+  function createOptions(select, allVariants) {
+    // grab the variant_id and variant_name of each variant
+    for (let { sku, variant_id, option_name, option_id, image } of allVariants) {
+      // create a new option element to append to the select element
+      const option = document.createElement('option');
+      // set the option value as the variant_id
+      option.value = option_name;
+      option.dataset.sku = sku;
+      // add the image as data-image to display on the option label
+      option.dataset.image = image;
+      // set the option text to the option_name
+      option.innerText = option_name;
+      // append the option to the select element
+      select.appendChild(option);
+    }
+
+    const option = document.createElement('option');
+    option.value = '';
+    option.innerText = 'Choose color';
+    select.insertBefore(option, select.children[0]);
+    select.value = '';
+  }
+
+  function createInput(select, label) {
+    // create a div to hold the label and select element
+    const div = document.createElement('div');
+    // set the class name of the div
+    div.className = 'flex-row';
+    div.style.gap = '20px';
+    div.style.justifyContent = 'left';
+    // set the label "for" value and inner HTML
+    div.innerHTML = `<p style="display: flex; gap: 10px; align-items: center; font-size: 16px; margin-bottom: 12px;"><label for="${label}" style="text-transform: capitalize; text-align: left; margin-bottom: 0; width: 130px;">${label.replace(
+      '-',
+      ' '
+    )}</label><img id="${label}-image" style="width: 50px; height: 50px; aspect-ratio: 1/1; visibility: hidden" src="" width="50" height="50"></p>`;
+    // add the select element to the div
+    div.appendChild(select);
+    // return the div to be appended to the DOM
+    return div;
+  }
+
+  // check how many times the system selection dropdown has been interacted with
+  let systemDropdownChanged = 0;
+
+  document.getElementById('system').addEventListener('change', function () {
+    if (this.value !== 'Custom') {
+      document.getElementById('custom-color-selection').style.display = 'none';
+    } else {
+      document.getElementById('custom-color-selection').style.display = 'block';
+      // increase the interaction count by 1
+      systemDropdownChanged++;
+      // only load this function one time on the first interaction
+      // otherwise, the function keeps adding custom dropdowns for every time the dropdown is clicked
+      if (systemDropdownChanged === 1) getStock();
+    }
+  });
+</script>
+{{/partial}} {{> layout/base}}

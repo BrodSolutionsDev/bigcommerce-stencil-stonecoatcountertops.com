@@ -1,0 +1,177 @@
+---
+gql: 'query CategoryByUrl {
+  site {
+    route(path: "/countertops") {
+      node {
+        id
+        ... on Category {
+          name
+          entityId
+          path
+          description
+          products {
+            edges {
+              node {
+                name
+                id
+                path
+                addToCartUrl
+                seo {
+                    metaDescription
+                }
+                inventory {
+                    isInStock
+                }
+                categories {
+                    edges {
+                        node {
+                            name
+                            path
+                            id
+                            entityId
+                        }
+                    }
+                }
+                defaultImage {
+                  url(width: 400, height: 400)
+                }
+                prices {
+                  price {
+                    ...PriceFields
+                  }
+                  priceRange {
+                    min {
+                      ...PriceFields
+                    }
+                    max {
+                      ...PriceFields
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  }
+  fragment PriceFields on Money {
+  value
+  currencyCode
+  }'
+---
+{{#partial "page"}}
+
+<!--
+    1) Hero (use category image)
+    2) Title, Content
+    3) Icons
+    4) Page Builder #1
+    5) Steps 1-4
+    5) Related
+-->
+
+<div class="container">
+<section class="page container stonecoat-landing">
+    <div class="page-hero">
+        <img src="https://cdn11.bigcommerce.com/s-19qfhxpoud/images/stencil/original/image-manager/gray-and-red-rock-epoxy-kits-bg.jpg" alt="countertop epoxy" />
+    
+        <div class="page-title">
+          <h1 class="page-heading">{{ page.title }}</h1>
+          <!-- <svg class="scc-button-icon">
+            <use xlink:href="#icon-admin-tooltip" />
+          </svg> -->
+          <div class="scc-page-content">
+            <p>{{{page.content}}}</p>
+          </div>
+
+          <script>
+            (function() {
+              const paragraphs = Array.from(document.querySelector(".scc-page-content").children);
+              let index = 0;
+              for (let paragraph of paragraphs) {
+                if (paragraph.innerHTML.length === 0) {
+                  paragraph.style.display = "none";
+                } else {
+                  index++;
+                }
+              }
+              paragraphs[index].style.marginBottom = 0;
+            })();
+          </script>
+  
+          
+      </div>
+    </div>
+
+    
+        
+        
+        {{{region name="countertops_top"}}}
+
+    <div class="page-steps">
+        <div class="step">
+            <div class="step-head">
+            <h3 class="step-title">Choose Epoxy & Amount Needed</h3>
+            <span class="step-icon-heading">Step <span class="step-icon">1</span></span></div>
+            <div class="step-description">
+                <p>Find the epoxy that works for your project, then calculate how much you need.</p>
+            </div>
+            {{> components/custom/epoxy-calculator }}
+            <div class="step-products">
+                {{{region name="countertops_step1"}}}
+            </div>
+            <div id="epoxy" class="landing-page-grid">
+              {{#if gql.data.site}}
+                  {{#each gql.data.site.route.node.products.edges}}
+                      {{> components/custom/product/product-card-page product=node}}
+                  {{/each}}
+              {{/if}}
+          </div>
+        </div>
+
+        <div class="step">
+            <div class="step-head">
+                <h3 class="step-title">Choose Colorants & Additives</h3>
+            <span class="step-icon-heading">Step <span class="step-icon">2</span></span></div>
+            <div class="step-description">
+                <p>Use spray paint, powders, dusts and dyes to your epoxy countertops.</p>
+            </div>
+            <div class="step-products">
+                {{{region name="countertops_step2"}}}
+            </div>
+            {{> components/custom/colorant-products }}
+        </div>
+
+        <div class="step">
+            <div class="step-head">
+              <h3 class="step-title">Choose Tools & Acccessories</h3>
+              <span class="step-icon-heading">Step <span class="step-icon">3</span></span></div>
+            <div class="step-description">
+                <p>Need anything to add? Find it here.</p>
+            </div>
+            <div class="step-products">
+                {{{region name="countertops_step3"}}}
+            </div>
+            {{> components/custom/tool-products }}
+        </div>
+
+    </div>
+
+    {{{region name="countertops_bottom"}}}
+
+    
+        
+        <div class="page-related-products">
+            {{{region name="countertops_related"}}}
+        </div>
+
+    {{> components/custom/categories title="More Categories"}}
+    
+</section>
+</div>
+{{/partial}}
+
+{{> layout/base}}
+

@@ -1,0 +1,24 @@
+<h2 class="page-heading">{{lang 'products.featured' }}</h2>
+
+<ul class="productGrid productGrid--maxCol{{ columns }}" data-product-type="featured" {{#if settings.data_tag_enabled}} data-list-name="Featured Products" {{/if}}>
+    {{#with products.[4]}}
+<li class="product">
+    {{>components/products/card settings=../settings theme_settings=../theme_settings customer=../customer event="list" position=(add @index 1)}}
+</li>
+{{/with}}
+{{#with products.[5]}}
+<li class="product">
+    {{>components/products/card settings=../settings theme_settings=../theme_settings customer=../customer event="list" position=(add @index 1)}}
+</li>
+{{/with}}
+{{#with products.[6]}}
+<li class="product">
+    {{>components/products/card settings=../settings theme_settings=../theme_settings customer=../customer event="list" position=(add @index 1)}}
+</li>
+{{/with}}
+{{#with products.[7]}}
+<li class="product">
+    {{>components/products/card settings=../settings theme_settings=../theme_settings customer=../customer event="list" position=(add @index 1)}}
+</li>
+{{/with}}
+</ul>

@@ -1,0 +1,33 @@
+.footer {
+    .navPages-item {
+        float: none !important;
+        display: inline;
+    }
+
+    p:not(.section-sub-heading),
+    li, 
+    div,
+    h1, h2, h3, h4, h5, h6,
+    a,
+    span {
+      color: #fff !important;
+    }
+}
+
+.bottom-footer {
+    p {
+        color: #FFF;
+        
+        a {
+            color: #FFF;
+        }
+    }
+}
+
+.footer-logo {
+    background: #000;
+
+    .header-logo a {
+        padding: 10px 0;
+    }
+}

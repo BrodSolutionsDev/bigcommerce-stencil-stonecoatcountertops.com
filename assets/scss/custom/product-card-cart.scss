@@ -1,0 +1,228 @@
+.product-card-cart {
+  display: grid;
+  grid-template-areas:
+    "image details"
+    "image priceAndQty";
+  grid-template-columns: 150px auto;
+  height: 170px;
+  box-shadow: $box-shadow;
+  border-radius: $border-radius-sm;
+  padding: $padding-small;
+  background: #181818;
+  max-width: 90%;
+  margin: 0 auto;
+  margin-bottom: 20px;
+  position: relative;
+
+  @media only screen and (max-width: 1200px) {
+      max-width: 100%;
+  }
+
+  @media only screen and (max-width: 800px) {
+      grid-template-columns: 100px auto;
+      height: 120px;
+  }
+
+  @media only screen and (max-width: 550px) {
+      margin-left: -30px;
+      min-width: 91vw;
+  }
+
+
+  .product-cart-img {
+    grid-area: image;
+    border-radius: $border-radius-sm;
+    height: 150px;
+    width: 150px;
+
+    img {
+        display: flex !important;
+      object-fit: contain;
+      min-height: 150px !important;
+      min-width: 150px;
+      border-radius: $border-radius-sm;
+    }
+
+    @media only screen and (max-width: 800px) {
+        width: 100px;
+        height: 100px;
+
+        img {
+            min-height: 100px !important;
+            min-width: 100px;
+        }
+    }
+  }
+
+  .product-card-details {
+    grid-area: details;
+    display: flex;
+    flex-direction: column;
+    padding-left: $padding-small;
+    top: 0;
+
+    a {
+      text-decoration: none;
+      transition: all $transition-fast;
+      color: #fff;
+      // &:hover {
+      //   h2 {
+      //     color: $;
+      //   }
+      // }
+    }
+
+    h2,
+    h4,
+    p {
+      margin: 0;
+    }
+
+    h2, h4 {
+      @include montserrat-bold;
+      font-size: $font-size-16;
+    }
+
+    p {
+      font-size: $font-size-14;
+    }
+  }
+
+  .product-card-priceAndQty {
+    grid-area: priceAndQty;
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 20px;
+    // justify-content: space-between;
+    align-items: baseline;
+    position: absolute;
+    width: 100%;
+    bottom: 0;
+    padding-left: $padding-small;
+    padding-top: $padding-small;
+
+      input {
+        @include montserrat-regular;
+        color: #fff !important;
+        background: #181818 !important;
+        border-color: #fdb819;
+        max-width: 100px;
+        
+        /* Chrome, Safari, Edge, Opera */
+        &::-webkit-outer-spin-button,
+        &::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        @media only screen and (max-width: 400px) {
+            font-size: 12px;
+        }
+      }
+
+      /* Firefox */
+      input[type=number] {
+        -moz-appearance: textfield;
+        appearance: textfield;
+      }
+
+      a,
+      button {
+          margin-bottom: 0;
+          width: 160px;
+          height: 45px;
+          position: relative;
+          overflow: hidden;
+
+          @media only screen and (max-width: 800px) {
+            font-size: 16px;
+            padding: 10px 12px;
+            // width: 110px;
+          }
+
+          @media only screen and (max-width: 550px) {
+              &::before {
+                  content: "";
+              }
+              width: 50px;
+              height: 38px;
+              overflow: hidden;
+
+              &::after {
+                  content: "Add";
+                  position: absolute;
+                  background: #181818;
+                  border-radius: 15px;
+                  left: 0;
+                  top: 0;
+                  width: 100%;
+                  height: 100%;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  z-index: 2;
+              }
+          }
+      }
+    .cart-item-value {
+      padding-left: 0;
+      font-family: "Bebas Neue", sans-serif;
+      font-size: 20px;
+    }
+
+    .form-increment {
+      background: $medium-grey;
+      border-radius: $border-radius-full;
+      color: #fff;
+      padding: 8px 20px;
+
+      button {
+        border: none;
+        color: inherit;
+      }
+        @media only screen and (max-width: 800px) {
+            padding: 4px 15px;
+            height: 38px;
+        }
+
+    }
+
+    .cart-remove {
+      @include flex-center;
+      height: 25px;
+      width: 20px;
+      border-radius: 0;
+      background: transparent;
+      position: relative;
+
+      svg {
+        position: absolute;
+        height: 100%;
+        width: 100%;
+        fill: $medium-grey;
+        left: 1px;
+        bottom: 1px;
+      }
+    }
+  }
+}
+
+.successfully-added-to-cart {
+  &::after {
+    content: "\2713" !important;
+    font-size: 30px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    color: #fdb819;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 5;
+    border: 1px solid #fdb819;
+    border-radius: 7px !important;
+  }
+}

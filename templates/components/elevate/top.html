@@ -1,0 +1,69 @@
+{{#unless theme_settings.hide_trending}}
+{{inject "bearerToken" settings.storefront_api.token}}
+{{inject "showSwatch" theme_settings.show_card_swatch}}
+<div class="trending-products">
+	<div class="container">
+		<div class="section-title">
+			<h2 class="section-heading"> 
+                {{theme_settings.trending-title}}
+            </h2>
+			{{#if theme_settings.trending-sub}}
+				<p class="section-sub-heading">
+					{{theme_settings.trending-sub}}
+				</p>
+			{{/if}} 
+		</div>
+		<ul class="productGrid productGrid--maxCol{{ columns }}" data-product-type="top_sellers"  {{#if settings.data_tag_enabled}} data-list-name="Most Popular Products" {{/if}}
+			data-slick='{
+				"lazyLoad": "ondemand",
+		        "dots": false,
+		        "arrows": true,
+		        "infinite": true,
+		        "slidesToShow": 3,
+		        "slidesToScroll": 1,
+		        "autoplay": false,
+		        "autoplaySpeed": 2000,
+		        "centerMode": false,
+		        "responsive": [
+		        	{
+				      "breakpoint": 768,
+				      "settings": {
+				      	"arrows": true,
+				      	"autoplay": false,
+				      	"autoplaySpeed": 2000,
+				        "slidesToShow": 2,
+				        "centerMode": false
+				      }
+				    },
+				    {
+				      "breakpoint": 480,
+				      "settings": {
+				      	"arrows": true,
+				      	"autoplay": false,
+				      	"autoplaySpeed": 2000,
+				        "slidesToShow": 1,
+				        "centerMode": false
+				      }
+				    }
+		        ]
+		    }'
+		>
+		{{#with products.[0]}}
+		<li class="product">
+		    {{>components/products/card settings=../settings theme_settings=../theme_settings customer=../customer event="list" position=(add @index 1)}}
+		</li>
+		{{/with}}
+		{{#with products.[1]}}
+		<li class="product">
+		    {{>components/products/card settings=../settings theme_settings=../theme_settings customer=../customer event="list" position=(add @index 1)}}
+		</li>
+		{{/with}}
+		{{#with products.[2]}}
+		<li class="product">
+		    {{>components/products/card settings=../settings theme_settings=../theme_settings customer=../customer event="list" position=(add @index 1)}}
+		</li>
+		{{/with}}
+		</ul>
+	</div>
+</div>
+{{/unless}}
