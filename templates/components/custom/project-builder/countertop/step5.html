@@ -40,7 +40,7 @@
           <span class="result-title">Finish:</span>
           <span id="project_finish-results"></span>
         </p>
-        <button id="pdf">Download PDF Instructions</button>
+        <!-- <button id="pdf">Download PDF Instructions</button> -->
       </div>
     </div>
     <div class="step-wrapper__right flex-col">
@@ -77,7 +77,7 @@
         // destructure the name and sku from the object entry
         const { name, sku } = value;
         // if there is no value, skip this iteration
-        if (value === '') continue;
+        if (value === '' || key === 'gallon_kits') continue;
         // display the selected requirement next to the name in the requirement list (ex: Project Surface: Existing Countertop)
         document.getElementById(`${key}-results`).innerHTML = name;
       } else {
@@ -90,11 +90,9 @@
     if (requirements['project_system'].name !== 'Custom') {
       document.querySelectorAll('.custom-color-results').forEach(color => (color.style.display = 'none'));
       document.querySelector('.undercoat-color-results').style.display = 'none';
-      document.querySelector('.kit-coverage-results').style.display = 'block';
     } else {
       document.querySelectorAll('.custom-color-results').forEach(color => (color.style.display = 'block'));
       document.querySelector('.undercoat-color-results').style.display = 'block';
-      document.querySelector('.kit-coverage-results').style.display = 'none';
     }
 
     // update coverage results based on the kit coverage
@@ -114,6 +112,23 @@
         continue;
       }
       detailsArr.push(getProductDetails(value.sku));
+    }
+
+    if (requirements['project_system'].name === "Custom") {
+      console.log("add epoxy gallon kits")
+      if (requirements.sqft <= 10) {
+        requirements['gallon_kits'].sku = "SCCE64OZK"
+        detailsArr.push(getProductDetails('SCCE64OZK'));
+      } else if (requirements.sqft <= 20) {
+        requirements['gallon_kits'].sku = "SCCE1GK"
+        detailsArr.push(getProductDetails('SCCE1GK'));
+      } else if (requirements.sqft <= 40) {
+        requirements['gallon_kits'].sku = "SCCE2GK"
+        detailsArr.push(getProductDetails('SCCE2GK'));
+      } else if (requirements.sqft <= 80) {
+        requirements['gallon_kits'].sku = "SCC4GAL"
+        detailsArr.push(getProductDetails('SCC4GAL'));
+      }
     }
 
     // push the undercoat_color requirements to the details array
@@ -254,8 +269,12 @@
         body: JSON.stringify(projectRequirements)
       })
         .then(response => response.json())
-        .then(data => console.log(data))
+        .then(data => {
+          document.getElementById('sfl').innerText = "Saved!"
+          console.log(data)
+        })
         .catch(error => {
+          document.getElementById('sfl').innerText = "An error occurred"
           console.error('Error:', error);
         });
     });
