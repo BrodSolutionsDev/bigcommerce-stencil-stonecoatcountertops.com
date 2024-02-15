@@ -686,5 +686,33 @@
       if (systemDropdownChanged === 1) getStock();
     }
   });
+
+  // listen for any "next step" button to be clicked and stop any playing iframes
+  document.querySelectorAll(".continue").forEach(button => {
+    button.addEventListener("click", function() {
+      document.querySelectorAll('iframe').forEach(iframe => {
+        const src = iframe.src;
+        iframe.src = src;
+      });
+    });
+  });
+
+  // listen for any "start project" button to be clicked and stop all playing iframes
+  document.querySelectorAll(".start-project").forEach(button => {
+    button.addEventListener("click", function() {
+      document.querySelectorAll('iframe').forEach(iframe => {
+        const src = iframe.src;
+        iframe.src = src;
+      });
+    });
+  });
+
+  // listen for the "previous" button to be clicked and stop all playing iframes
+  document.getElementById("previous").addEventListener("click", function() {
+    document.querySelectorAll('iframe').forEach(iframe => {
+      const src = iframe.src;
+      iframe.src = src;
+    });
+  });
 </script>
 {{/partial}} {{> layout/base}}
