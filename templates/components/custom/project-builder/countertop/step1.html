@@ -52,7 +52,12 @@
   
   let sqFtValue = 1;
   let sqFtPlus10Percent;
+  document.getElementById("amount-next").addEventListener("click", function() {
+      const sqftInput = document.getElementById('total-sqft');
+      pbUpdateStorage('sqft', Number(sqftInput.value));
+    });
   (function () {
+    if (currentStep !== 1) return;
     // grab the total sqft input
     const sqftInput = document.getElementById('total-sqft');
     // disabled the 'next' button by default
@@ -64,13 +69,18 @@
       pbUpdateStorage('sqft', Number(e.target.value));
     });
 
+    document.querySelector('mobile-next').addEventListener("click", function() {
+      const sqftInput = document.getElementById('total-sqft');
+      pbUpdateStorage('sqft', Number(sqftInput.value));
+    })
+
     // listen for the user calculating the input via the calculator
     ((input) => {
       // Callback function to execute when mutations are observed
       const callback = (mutationList, observer) => {
         // sqftInput.value = sqftInput.dataset.total;
         toggleDisabled('amount-next', input)
-        pbUpdateStorage('sqft', Number(input.value));
+        // pbUpdateStorage('sqft', Number(input.value));
       };
 
       // Create an observer instance linked to the callback function
@@ -96,12 +106,12 @@
           const sqft = JSON.parse(localStorage.getItem("project-requirements"))['sqft'];
 
           if (addBacksplashInput.checked) {
-            totalSqFtInput.value = (Number(totalSqFtInput.value) + (sqft * .1)).toFixed(2);
+            totalSqFtInput.value = (Number(totalSqFtInput.value) + Number(sqft * .1)).toFixed(2);
           } else {
-            totalSqFtInput.value = (Number(totalSqFtInput.value) - (sqft*  .1)).toFixed(2);
+            totalSqFtInput.value = (Number(totalSqFtInput.value) - Number(sqft * .1)).toFixed(2);
           }
 
-          pbUpdateStorage('sqft', Number(totalSqFtInput.value));
+          // pbUpdateStorage('sqft', Number(totalSqFtInput.value));
         })
 
       // add the value of only the edited surface inputs
@@ -161,6 +171,7 @@
       const calculateTotalSqFt = arr => Object.values(arr).reduce((acc, cur) => acc.value * cur.value);
 
       document.getElementById('calculate-amount-button').addEventListener('click', function (e) {
+        document.getElementById("add-backsplash").checked = false;
         // set the total to zero to reset the value every time
         // loop over the surface value sections
         let totalSurface = validateInputsReturnTotals(e, surfaceValues);
@@ -177,6 +188,7 @@
            // set the total sq ft input in step 1 to the value, fixed to two decimal places
           totalSqFtInput.dataset.total = ((totalSurface - totalCutout) / 144).toFixed(2);
           totalSqFtInput.value = totalSqFtInput.dataset.total;
+          pbUpdateStorage('sqft', Number(totalSqFtInput.dataset.total))
           document.getElementById("help-calculate-modal").removeAttribute("open")
         }
       });
