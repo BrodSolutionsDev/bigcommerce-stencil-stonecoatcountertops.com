@@ -2,7 +2,7 @@
   "customLayouts": {
     "brand": {},
     "category": {},
-    "page": {},
+    "page": {"project-builder.html": "/dev/project-builder"},
     "product": {}
   },
   "normalStoreUrl": "https://stonecoatcountertops.com/",
