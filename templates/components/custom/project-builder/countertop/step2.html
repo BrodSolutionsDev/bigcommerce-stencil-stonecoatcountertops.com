@@ -2,7 +2,7 @@
   <h2 class="calculator-heading">Countertop Color Finish</h2>
   <div class="step-wrapper flex-row">
     <div class="step-wrapper__left">
-      <div id="project-surface" class="flex-col">
+      <div id="project-system" class="flex-col">
         <div id="project-state" class="flex-col step-choice">
           <h3>What is your color system</h3>
           <span class="project-selection">
@@ -252,7 +252,12 @@
             name: choice.value,
             sku: currentVariant.variant.sku
           });
+
+          document.getElementById("temp1-next").style.position = "relative";
+          document.getElementById("temp1-next").style.bottom = 'unset';
         } else {
+          document.getElementById("temp1-next").style.position = "sticky";
+          document.getElementById("temp1-next").style.bottom = 0;
           // update local storage
           pbUpdateStorage('project_system', {
             name: 'Custom',

@@ -74,6 +74,13 @@
   function pbGetStorage() {
     return JSON.parse(localStorage.getItem('project-requirements'));
   }
+  function setCurrentStep(step) {
+    localStorage.setItem("currentStep", JSON.stringify({ step }))
+  }
+  function getCurrentStep() {
+    return JSON.parse(localStorage.getItem("currentStep")).step;
+  }
+  window.getCurrentStep = getCurrentStep;
 
   // sections
   const calculator = document.getElementById('calculator');
@@ -173,6 +180,7 @@
 
   // the current step in the calculator
   let currentStep = 0;
+  setCurrentStep(currentStep);
 
   // handle which step to show in the calculator
   function calculatorProgress(step = 0) {
@@ -257,6 +265,7 @@
     currentStep--;
     // update the calculator progress
     calculatorProgress(currentStep);
+    setCurrentStep(currentStep);
   });
 
   // go to next step
@@ -265,6 +274,7 @@
     if (!e.target.closest('.continue')) return;
     currentStep++;
     calculatorProgress(currentStep);
+    setCurrentStep(currentStep)
   });
 
   // ========================================
@@ -281,6 +291,7 @@
     currentStep = 1;
     // // update the calculator progress
     calculatorProgress(currentStep);
+    setCurrentStep(currentStep)
   });
 
   // from w3 schools
@@ -441,7 +452,7 @@
     });
   }
 
-  async function getStock() {
+  async function createPowderDropdowns() {
     // fetch all the metallic powder (id: 116) variants
     const res = await fetch('/graphql', {
       method: 'POST',
@@ -500,25 +511,19 @@
     // create a select element for each color selection
     const selectPrimary = document.createElement('select');
     const selectSecondary = document.createElement('select');
-    const selectAccent = document.createElement('select');
     // set the id and class of each color select element
     selectPrimary.id = 'primary-color';
     // selectPrimary.className = 'form-select form-select--small';
     selectSecondary.id = 'secondary-color';
     // selectSecondary.className = 'form-select form-select--small';
-    selectAccent.id = 'accent-color';
-    // selectAccent.className = 'form-select form-select--small';
     // append each in stock and purchasable variant option to each color select element
     createOptions(selectPrimary, variants);
     createOptions(selectSecondary, variants);
-    createOptions(selectAccent, variants);
     // create a div element to hold each label + color select element
     const divPrimary = createInput(selectPrimary, 'primary-color');
     const divSecondary = createInput(selectSecondary, 'secondary-color');
-    const divAccent = createInput(selectAccent, 'accent-color');
     // add each color select div element to the DOM
     // must append secondary -> primary because each one inserts at the very top of productView-options
-    options.insertBefore(divAccent, options.firstChild);
     options.insertBefore(divSecondary, options.firstChild);
     options.insertBefore(divPrimary, options.firstChild);
 
@@ -573,6 +578,74 @@
         sku: secondaryChoice.dataset.sku
       });
     });
+  }
+
+  async function createDyeDropdown() {
+    // fetch all the metallic powder (id: 116) variants
+    const res = await fetch('/graphql', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        Authorization: 'Bearer {{settings.storefront_api.token}}'
+      },
+      body: JSON.stringify({
+        query: `
+                    query getStockValues {
+                        site {
+                            liquidDye: product(entityId: 142) {
+                                name
+                                variants(first: 150) {
+                                    edges {
+                                        variant: node {
+                                            sku
+                                            entityId
+                                            isPurchasable
+                                            inventory {
+                                                isInStock
+                                            }
+                                            defaultImage {
+                                                url(width: 50, height: 50)
+                                            }
+                                            options {
+                                                edges {
+                                                    option: node {
+                                                        values {
+                                                            edges {
+                                                                node {
+                                                                    label
+                                                                    entityId
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                `
+      })
+    });
+
+    const data = await res.json();
+    // grab only the variants that are purchasable and in stock
+    const variants = inStockAndPurchasableVariants(data.data.site.liquidDye.variants.edges);
+    // grab the productView-options div to append the elements to
+    const options = document.getElementById('custom-color-dropdowns');
+    // create a select element for the accent dye
+    const selectAccent = document.createElement('select');
+    // set the id of the dye select element
+    selectAccent.id = 'accent-color';
+    // append each in stock and purchasable variant option to the dye select element
+    createOptions(selectAccent, variants);
+    // create a div element to hold the dye label + color select element
+    const divAccent = createInput(selectAccent, 'accent-color');
+    // add dye select div element to the DOM after the secondary color dropdown
+    options.appendChild(divAccent);
 
     // if the accent color changes
     document.getElementById('accent-color').addEventListener('change', function (e) {
@@ -606,6 +679,7 @@
     const variants = allVariants.filter(edge => edge.variant.isPurchasable && edge.variant.inventory.isInStock);
     // only use skus in this list for the dropdowns
     const skuList = [
+      // metallic powder
       'AL31005-15G',
       'AL31015-15G',
       '767311985296',
@@ -620,7 +694,22 @@
       'AL31055-15G',
       'AL31053-15G',
       'AL31013-15G',
-      'AL31051-15G'
+      'AL31051-15G',
+      // liquid dye
+      'AL30001',
+      'AL30101',
+      'AL30601',
+      'AL31601',
+      'AL31701',
+      'AL31501',
+      'AL31401',
+      'AL30401',
+      'AL30501',
+      'AL30701',
+      'AL30901',
+      'AL30201',
+      'AL30301',
+      'AL30801'
     ];
     // filter out the valid variants from the variants above to return only the allowed colors
     const validVariants = variants.filter(edge => skuList.includes(edge.variant.sku));
@@ -687,13 +776,16 @@
       systemDropdownChanged++;
       // only load this function one time on the first interaction
       // otherwise, the function keeps adding custom dropdowns for every time the dropdown is clicked
-      if (systemDropdownChanged === 1) getStock();
+      if (systemDropdownChanged === 1) {
+        createPowderDropdowns();
+        createDyeDropdown();
+      }
     }
   });
 
   // listen for any "next step" button to be clicked and stop any playing iframes
   document.querySelectorAll(".continue").forEach(button => {
-    button.addEventListener("click", function() {
+    button.addEventListener("click", function () {
       document.querySelectorAll('iframe').forEach(iframe => {
         const src = iframe.src;
         iframe.src = src;
@@ -703,7 +795,7 @@
 
   // listen for any "start project" button to be clicked and stop all playing iframes
   document.querySelectorAll(".start-project").forEach(button => {
-    button.addEventListener("click", function() {
+    button.addEventListener("click", function () {
       document.querySelectorAll('iframe').forEach(iframe => {
         const src = iframe.src;
         iframe.src = src;
@@ -712,7 +804,7 @@
   });
 
   // listen for the "previous" button to be clicked and stop all playing iframes
-  document.getElementById("previous").addEventListener("click", function() {
+  document.getElementById("previous").addEventListener("click", function () {
     document.querySelectorAll('iframe').forEach(iframe => {
       const src = iframe.src;
       iframe.src = src;
