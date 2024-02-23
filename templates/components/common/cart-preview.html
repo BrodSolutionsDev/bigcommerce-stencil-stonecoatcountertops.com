@@ -1,7 +1,7 @@
 <div class="previewCart">
     {{#if cart.items.length}}
         <ul class="previewCartList">
-            {{#each (limit cart.items theme_settings.navUser-cart-limit)}}
+            {{#each cart.items}}
                 <li class="previewCartItem">
                     <div class="previewCartItem-image">
                         {{#if type '==' 'GiftCertificate'}}
