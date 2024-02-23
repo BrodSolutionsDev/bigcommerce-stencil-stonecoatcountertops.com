@@ -49,7 +49,7 @@
       <div id="add-to-cart" class="flex-row">
         <div id="project-cart-buttons">
           <button id="atc">Add to Cart</button>
-          <button id="sfl">Save for Later</button>
+          <!-- <button id="sfl">Save for Later</button> -->
         </div>
         <p id="kit-total"></p>
       </div>
@@ -213,10 +213,9 @@
       cartItem.innerHTML = `
         <img class="results-cart-item__image" src="${value.image}" />
         <h4 class="results-cart-item__title"><a href="${value.url}">${value.name.toUpperCase()}</a></h4>
-        ${
-          variant.options.length
-            ? `<p class="results-cart-item__option">${variant.options[0].name}: ${variant.options[0].values[0].label}</p>`
-            : ''
+        ${variant.options.length
+          ? `<p class="results-cart-item__option">${variant.options[0].name}: ${variant.options[0].values[0].label}</p>`
+          : ''
         }
         <p class="results-cart-item__quantity">Quantity: ${qty}</p>
         `;
@@ -245,6 +244,7 @@
     // SAVE FOR LATER
     // ==========================================
     // Assuming you have a button with id 'sfl'
+    /*
     document.getElementById('sfl').addEventListener('click', function () {
       // present a modal with Email and Name fields
 
@@ -278,6 +278,7 @@
           console.error('Error:', error);
         });
     });
+    */
 
     // loop over each total using the data-price attribute
     const total = Array.from(document.querySelectorAll('[data-price]'))
