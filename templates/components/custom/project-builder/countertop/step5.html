@@ -203,7 +203,7 @@
       // add the color quantity based on color choice
       let qty;
       if (key === 'primary_color') qty = 6;
-      else if (key === 'secondary_color' || key === 'accent_color') qty = 3;
+      else if (key === 'secondary_color') qty = 3;
       else qty = 1;
       // create a div to add to the cart list
       const cartItem = document.createElement('div');
@@ -229,13 +229,17 @@
           variant: {
             option_id: variant.options[0].option_id,
             value_id: variant.options[0].values[0].value_id
-          }
+          },
+          qty,
+          price: value.sale_price ? value.sale_price : value.default_price
         });
       } else {
         // if the variant does NOT have options
         addToCartArr.push({
           product_id: value.id,
-          variant: null
+          variant: null,
+          qty,
+          price: value.sale_price ? value.sale_price : value.default_price
         });
       }
     }
@@ -281,9 +285,10 @@
     */
 
     // loop over each total using the data-price attribute
-    const total = Array.from(document.querySelectorAll('[data-price]'))
-      .map(elem => Number(elem.dataset.price))
-      .reduce((acc, curr) => acc + curr);
+    // const total = Array.from(document.querySelectorAll('[data-price]'))
+    //   .map(elem => Number(elem.dataset.price))
+    //   .reduce((acc, curr) => acc + curr);
+    const total = addToCartArr.reduce((acc, cur) => acc + Number(cur.price * cur.qty), 0)
     // set the total in the DOM
     document.getElementById('kit-total').innerHTML = `Kit Total: $${total.toFixed(2)}`;
     // fire off the addToCart function when the add to cart button is clicked

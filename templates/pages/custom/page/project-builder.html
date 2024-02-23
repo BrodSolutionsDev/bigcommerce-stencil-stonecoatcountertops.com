@@ -425,7 +425,7 @@
     // set the product ID
     formData.append('product_id', item.product_id);
     // set the quantity
-    formData.append('qty[]', 1);
+    formData.append('qty[]', item.qty);
     // if the product has a variant...
     if (item.variant) {
       // set the attribute to the option id and the value to the variant value id
