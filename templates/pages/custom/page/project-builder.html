@@ -20,6 +20,9 @@
     <button class="mobile-next continue calculator-button">Next</button>
   </div>
 </div>
+<p class="pb-disclaimer"><strong>Disclaimer</strong>:
+  Stone Coat Countertops offers no warranty, either expressed or implied, as to the reliability of the information
+  contained herein and they assume no liability for loss or damage associated with use of these calculators.</p>
 
 {{{region name="project_builder_above_body"}}} {{{ body }}} {{{region name="project_builder_below_body"}}}
 
@@ -438,12 +441,14 @@
       // if the cart array is still full...
       if (cartArr.length > 0) {
         document.querySelector('.cart-quantity').innerText =
-          Number(document.querySelector('.cart-quantity').innerText) + 1;
+          Number(document.querySelector('.cart-quantity').innerText) + Number(item.qty);
         // set the innerText of the add to cart button to show it's still working
         document.getElementById('atc').innerText = 'Adding to Cart';
         // run the function again
         return addToCart(cartArr);
       } else {
+        document.querySelector('.cart-quantity').innerText =
+          Number(document.querySelector('.cart-quantity').innerText) + 1;
         // if the cart array is empty, update the add to cart text to show it's finished
         document.getElementById('atc').innerText = 'Added to Cart!';
         // disable the button to prevent users from clicking it multiple times
@@ -786,7 +791,7 @@
   // listen for any "next step" button to be clicked and stop any playing iframes
   document.querySelectorAll(".continue").forEach(button => {
     button.addEventListener("click", function () {
-      document.querySelectorAll('iframe').forEach(iframe => {
+      document.querySelectorAll('.pb-youtube-video').forEach(iframe => {
         const src = iframe.src;
         iframe.src = src;
       });
@@ -796,7 +801,7 @@
   // listen for any "start project" button to be clicked and stop all playing iframes
   document.querySelectorAll(".start-project").forEach(button => {
     button.addEventListener("click", function () {
-      document.querySelectorAll('iframe').forEach(iframe => {
+      document.querySelectorAll('.pb-youtube-video').forEach(iframe => {
         const src = iframe.src;
         iframe.src = src;
       });
@@ -805,7 +810,7 @@
 
   // listen for the "previous" button to be clicked and stop all playing iframes
   document.getElementById("previous").addEventListener("click", function () {
-    document.querySelectorAll('iframe').forEach(iframe => {
+    document.querySelectorAll('.pb-youtube-video').forEach(iframe => {
       const src = iframe.src;
       iframe.src = src;
     });
