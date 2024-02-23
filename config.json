@@ -1,5 +1,5 @@
 {
-  "name": "Elevate - Feb16 - PB ready for review",
+  "name": "Elevate - Feb23 - PB ready for review",
   "version": "1.5.9",
   "meta": {
     "price": 29500,
@@ -617,8 +617,7 @@
           "fashion_jewelry"
         ]
       },
-      "images": {
-      },
+      "images": {},
       "settings": {
         "current-style": "fashion",
         "show_card_swatch": false,
