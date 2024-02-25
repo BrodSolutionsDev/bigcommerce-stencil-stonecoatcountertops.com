@@ -65,6 +65,7 @@
     // don't run any code unless the currentStep is on 4
     if (currentStep !== 5) return;
     localStorage.setItem("startOver", "false");
+    document.getElementById("startOver").setAttribute("style", "display: block !important");
     // set the add to cart text to Add to Cart every time this function is ran
     document.getElementById('atc').innerText = 'Add to Cart';
     // set the add to cart button to "not disabled" every time this function is ran
@@ -134,35 +135,41 @@
       const gallonKitsRequired = [];
       // grab the required kit from the kits object based on the choice
       const kit = gallonKit['Epoxy Gallon Kits'];
-      // set an iterations to prevent endless loops
-      let iterations = 0;
-      // initially set remainingSqft to the total sqft required
-      let remainingSqft = Number(requirements['sqft']);
-      while(true) {
-        // if the loop iterates more than 20 times, break out of the loop
-        if (iterations >= 20) break;
-        // if the remainingSqft is lessthan or equalto zero, break
-        if (remainingSqft <= 0) break;
-        // sort the kit variants from greatest to least (arrays always sort lowest to highest by default)
-        const sortedKit = Object.entries(kit).sort((a, b) => b[0] - a[0]);
-        // loop over the kit variants
-        for (const [coverage, variant] of sortedKit) {
-          // subtract the coverage of the kit from the remaining sqft
-          const leftover = Number(remainingSqft) - Number(coverage);
-          // if it has a leftover
-          if (leftover >= 0) {
-            // push the variant to the kits required
-            gallonKitsRequired.push(variant);
-            // set the remainingSwft to the leftover for the next iteration
-            remainingSqft = leftover;
+      if (Number(requirements['sqft']) <= 10) gallonKitsRequired.push(kit['10']);
+      else if (Number(requirements['sqft']) <= 20) gallonKitsRequired.push(kit['20']);
+      else if (Number(requirements['sqft']) <= 40) gallonKitsRequired.push(kit['40']);
+      else if (Number(requirements['sqft']) <= 80) gallonKitsRequired.push(kit['80']);
+      else {
+        // set an iterations to prevent endless loops
+        let iterations = 0;
+        // initially set remainingSqft to the total sqft required
+        let remainingSqft = Number(requirements['sqft']);
+        while(true) {
+          // if the loop iterates more than 20 times, break out of the loop
+          if (iterations >= 20) break;
+          // if the remainingSqft is lessthan or equalto zero, break
+          if (remainingSqft <= 0) break;
+          // sort the kit variants from greatest to least (arrays always sort lowest to highest by default)
+          const sortedKit = Object.entries(kit).sort((a, b) => b[0] - a[0]);
+          // loop over the kit variants
+          for (const [coverage, variant] of sortedKit) {
+            // subtract the coverage of the kit from the remaining sqft
+            const leftover = Number(remainingSqft) - Number(coverage);
+            // if it has a leftover
+            if (leftover >= 0) {
+              // push the variant to the kits required
+              gallonKitsRequired.push(variant);
+              // set the remainingSwft to the leftover for the next iteration
+              remainingSqft = leftover;
+            }
           }
+          // increment the iterations
+          iterations++;
         }
-        // increment the iterations
-        iterations++;
-      }
 
-      if (remainingSqft > 0) {
-        gallonKitsRequired.push(kit['10'])
+        if (remainingSqft > 0) {
+          gallonKitsRequired.push(kit['10'])
+        }
       }
 
       requirements['gallon_kits'].sku = gallonKitsRequired;

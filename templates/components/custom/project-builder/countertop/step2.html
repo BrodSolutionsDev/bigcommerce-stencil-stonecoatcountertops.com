@@ -192,63 +192,12 @@
       if (choice.value !== 'Custom') {
         // grab the required kit from the kits object based on the choice
         let kit = kits[choice.innerText];
-        // set an iterations to prevent endless loops
-        let iterations = 0;
-        // initially set remainingSqft to the total sqft required
-        let remainingSqft = sqft;
-        while(true) {
-          // if the loop iterates more than 20 times, break out of the loop
-          if (iterations >= 20) break;
-          // if the remainingSqft is lessthan or equalto zero, break
-          if (remainingSqft <= 0) break;
-          // sort the kit variants from greatest to least (arrays always sort lowest to highest by default)
-          const sortedKit = Object.entries(kit).sort((a, b) => b[0] - a[0]);
-          // loop over the kit variants
-          for (const [coverage, variant] of sortedKit) {
-            // subtract the coverage of the kit from the remaining sqft
-            const leftover = Number(remainingSqft) - Number(coverage);
-            // if it has a leftover
-            if (leftover >= 0) {
-              // push the variant to the kits required
-              kitsRequired.push(variant);
-              // set the remainingSwft to the leftover for the next iteration
-              remainingSqft = leftover;
-            }
-          }
-          // increment the iterations
-          iterations++;
-        }
 
-        if (remainingSqft > 0) {
-          kitsRequired.push(kit['10'])
-        }
-
-        // update local storage
-        pbUpdateStorage('project_system', {
-          name: choice.value,
-          sku: kitsRequired
-        });
-      } else {
-        // update local storage
-        pbUpdateStorage('project_system', {
-          name: 'Custom',
-          sku: ''
-        });
-      }
-
-      const projectSystem = document.querySelector("[name='project_system']");
-      let projectSystemSelection = projectSystem.value;
-      projectSystem.addEventListener('change', function (e) {
-        projectSystemSelection = projectSystem.value;
-        // get the choice from the kit dropdown
-        choice = Array.from(document.getElementById('system').children).filter(
-          child => child.value === document.getElementById('system').value
-        )[0];
-        if (choice.value !== 'Custom') {
-          // An array of kits needed to fulfill the project
-          const kitsRequired = [];
-          // grab the required kit from the kits object based on the choice
-          kit = kits[choice.innerText];
+        if (sqft <= 10) kitsRequired.push(kit['10']);
+        else if (sqft <= 20) kitsRequired.push(kit['20']);
+        else if (sqft <= 40) kitsRequired.push(kit['40']);
+        else if (sqft <= 80) kitsRequired.push(kit['80']);
+        else {
           // set an iterations to prevent endless loops
           let iterations = 0;
           // initially set remainingSqft to the total sqft required
@@ -278,6 +227,69 @@
 
           if (remainingSqft > 0) {
             kitsRequired.push(kit['10'])
+          }
+        }
+        // update local storage
+        pbUpdateStorage('project_system', {
+          name: choice.value,
+          sku: kitsRequired
+        });
+      } else {
+        // update local storage
+        pbUpdateStorage('project_system', {
+          name: 'Custom',
+          sku: ''
+        });
+      }
+
+      const projectSystem = document.querySelector("[name='project_system']");
+      let projectSystemSelection = projectSystem.value;
+      projectSystem.addEventListener('change', function (e) {
+        projectSystemSelection = projectSystem.value;
+        // get the choice from the kit dropdown
+        choice = Array.from(document.getElementById('system').children).filter(
+          child => child.value === document.getElementById('system').value
+        )[0];
+        if (choice.value !== 'Custom') {
+          // An array of kits needed to fulfill the project
+          const kitsRequired = [];
+          // grab the required kit from the kits object based on the choice
+          kit = kits[choice.innerText];
+          if (sqft <= 10) kitsRequired.push(kit['10']);
+          else if (sqft <= 20) kitsRequired.push(kit['20']);
+          else if (sqft <= 40) kitsRequired.push(kit['40']);
+          else if (sqft <= 80) kitsRequired.push(kit['80']);
+          else {
+            // set an iterations to prevent endless loops
+            let iterations = 0;
+            // initially set remainingSqft to the total sqft required
+            let remainingSqft = sqft;
+            while(true) {
+              // if the loop iterates more than 20 times, break out of the loop
+              if (iterations >= 20) break;
+              // if the remainingSqft is lessthan or equalto zero, break
+              if (remainingSqft <= 0) break;
+              // sort the kit variants from greatest to least (arrays always sort lowest to highest by default)
+              const sortedKit = Object.entries(kit).sort((a, b) => b[0] - a[0]);
+              // loop over the kit variants
+              for (const [coverage, variant] of sortedKit) {
+                // subtract the coverage of the kit from the remaining sqft
+                const leftover = Number(remainingSqft) - Number(coverage);
+                // if it has a leftover
+                if (leftover >= 0) {
+                  // push the variant to the kits required
+                  kitsRequired.push(variant);
+                  // set the remainingSwft to the leftover for the next iteration
+                  remainingSqft = leftover;
+                }
+              }
+              // increment the iterations
+              iterations++;
+            }
+
+            if (remainingSqft > 0) {
+              kitsRequired.push(kit['10'])
+            }
           }
           // update local storage
           pbUpdateStorage('project_system', {
