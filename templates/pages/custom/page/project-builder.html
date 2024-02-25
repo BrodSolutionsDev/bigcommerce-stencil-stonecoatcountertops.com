@@ -20,6 +20,9 @@
     <button class="mobile-next continue calculator-button">Next</button>
   </div>
 </div>
+<div style="display: flex; justify-content: flex-end;">
+<button class="button button--primary" id="startOver">Start Over</button>
+</div>
 <p class="pb-disclaimer"><strong>Disclaimer</strong>:
   Stone Coat Countertops offers no warranty, either expressed or implied, as to the reliability of the information
   contained herein and they assume no liability for loss or damage associated with use of these calculators.</p>
@@ -104,42 +107,47 @@
   // inputs
   const totalSqFt = document.getElementById('total-sqft');
 
+  let projectRequirements;
   // starting requirements
-  const projectRequirements = {
-    sqft: 0,
-    project_type: {
-      name: null,
-      sku: null
-    },
-    undercoat_color: {
-      name: null,
-      sku: null
-    },
-    project_system: {
-      name: systemChoice.value,
-      sku: systemChoice.dataset.sku
-    },
-    primary_color: {
-      name: null,
-      sku: null
-    },
-    secondary_color: {
-      name: null,
-      sku: null
-    },
-    accent_color: {
-      name: null,
-      sku: null
-    },
-    project_finish: {
-      name: null,
-      sku: null
-    },
-    gallon_kits: {
-      name: 'Epoxy Gallon Kits',
-      sku: null
-    }
-  };
+  if (localStorage.getItem("startOver") === "true") {
+    projectRequirements = {
+      sqft: 0,
+      project_type: {
+        name: null,
+        sku: null
+      },
+      undercoat_color: {
+        name: null,
+        sku: null
+      },
+      project_system: {
+        name: systemChoice.value,
+        sku: systemChoice.dataset.sku
+      },
+      primary_color: {
+        name: null,
+        sku: null
+      },
+      secondary_color: {
+        name: null,
+        sku: null
+      },
+      accent_color: {
+        name: null,
+        sku: null
+      },
+      project_finish: {
+        name: null,
+        sku: null
+      },
+      gallon_kits: {
+        name: 'Epoxy Gallon Kits',
+        sku: null
+      }
+    };
+  } else {
+    projectRequirements = JSON.parse(localStorage.getItem("project-requirements"));
+  }
 
   helpCalculate.addEventListener('click', function () {
     helpModal.setAttribute('open', null);
@@ -816,6 +824,24 @@
       const src = iframe.src;
       iframe.src = src;
     });
+  });
+
+  if (localStorage.getItem("startOver") === "false") {
+    console.log("Go to step 5")
+    setCurrentStep(5);
+    calculatorProgress(5);
+    currentStep = 5;
+    document.getElementById("startOver").setAttribute("style", "display: block !important");
+  } else {
+    console.log("start from beginning")
+    document.getElementById("startOver").setAttribute("style", "display: none !important");
+  }
+
+  document.getElementById("startOver").addEventListener("click", function(e) {
+    e.preventDefault();
+
+    localStorage.setItem("startOver", "true");
+    window.location.reload();
   });
 </script>
 

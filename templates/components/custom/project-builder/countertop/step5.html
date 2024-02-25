@@ -64,6 +64,7 @@
   const callback = async (mutationList, observer) => {
     // don't run any code unless the currentStep is on 4
     if (currentStep !== 5) return;
+    localStorage.setItem("startOver", "false");
     // set the add to cart text to Add to Cart every time this function is ran
     document.getElementById('atc').innerText = 'Add to Cart';
     // set the add to cart button to "not disabled" every time this function is ran
