@@ -437,7 +437,9 @@
     // remove the last item from the array
     cartArr.pop();
     // add the item to the cart
-    window.stencilUtils.api.cart.itemAdd(formData, (err, res) => {
+    window.stencilUtils.api.cart.itemAdd(formData, (err, response) => {
+      let errMessage = err || response.data.error;
+      if (errMessage) return console.log("ERROR: ", errMessage)
       // if the cart array is still full...
       if (cartArr.length > 0) {
         document.querySelector('.cart-quantity').innerText =
@@ -816,4 +818,6 @@
     });
   });
 </script>
+
+
 {{/partial}} {{> layout/base}}

@@ -120,12 +120,7 @@
 </div>
 
 <script>
-  (function () {
-    const callback = async (mutationList, observer) => {
-      if (currentStep !== 2) return;
-      if (document.getElementById('custom-color-selection').style.display === 'block') return;
-
-      const kits = {
+  const kits = {
         'Baltic Brown': {
           80: { sku: 'SCBBE4GAL' },
           40: { sku: 'SCBBE2GAL' },
@@ -181,7 +176,13 @@
           10: { sku: 'SCCWHTMARBLEHAL' }
         }
       };
+  (function (kits) {
+    const callback = async (mutationList, observer) => {
+      if (currentStep !== 2) return;
+      if (document.getElementById('custom-color-selection').style.display === 'block') return;
 
+      // An array of kits needed to fulfill the project
+      const kitsRequired = [];
       // grab the sqft from localStorage to grab the correct kit size
       const sqft = JSON.parse(localStorage.getItem('project-requirements'))['sqft'];
       // get the choice from the kit dropdown (before listening for change in case user doesn't change kit)
@@ -191,26 +192,41 @@
       if (choice.value !== 'Custom') {
         // grab the required kit from the kits object based on the choice
         let kit = kits[choice.innerText];
-        // set a default current variant to update on the following loop
-        let currentVariant = {
-          leftover: 100, // set leftover to a high number to update on the first loop iteration
-          variant: {}
-        };
-        // loop over the entries in the kit and destructure the coverage (key) and the variant (value)
-        for (const [coverage, variant] of Object.entries(kit)) {
-          // subtract the required sqft from the coverage to see how much is leftover
-          const leftover = Number(coverage) - Number(sqft);
-          // if the leftover is smaller than the currentVariant leftover (above) and the value isn't less than zero
-          if (leftover <= currentVariant.leftover && leftover >= 0) {
-            // update the leftover and variant in the currentVariant object
-            currentVariant.leftover = leftover;
-            currentVariant.variant = variant;
+        // set an iterations to prevent endless loops
+        let iterations = 0;
+        // initially set remainingSqft to the total sqft required
+        let remainingSqft = sqft;
+        while(true) {
+          // if the loop iterates more than 20 times, break out of the loop
+          if (iterations >= 20) break;
+          // if the remainingSqft is lessthan or equalto zero, break
+          if (remainingSqft <= 0) break;
+          // sort the kit variants from greatest to least (arrays always sort lowest to highest by default)
+          const sortedKit = Object.entries(kit).sort((a, b) => b[0] - a[0]);
+          // loop over the kit variants
+          for (const [coverage, variant] of sortedKit) {
+            // subtract the coverage of the kit from the remaining sqft
+            const leftover = Number(remainingSqft) - Number(coverage);
+            // if it has a leftover
+            if (leftover >= 0) {
+              // push the variant to the kits required
+              kitsRequired.push(variant);
+              // set the remainingSwft to the leftover for the next iteration
+              remainingSqft = leftover;
+            }
           }
+          // increment the iterations
+          iterations++;
         }
+
+        if (remainingSqft > 0) {
+          kitsRequired.push(kit['10'])
+        }
+
         // update local storage
         pbUpdateStorage('project_system', {
           name: choice.value,
-          sku: currentVariant.variant.sku
+          sku: kitsRequired
         });
       } else {
         // update local storage
@@ -229,28 +245,44 @@
           child => child.value === document.getElementById('system').value
         )[0];
         if (choice.value !== 'Custom') {
+          // An array of kits needed to fulfill the project
+          const kitsRequired = [];
           // grab the required kit from the kits object based on the choice
           kit = kits[choice.innerText];
-          // set a default current variant to update on the following loop
-          let currentVariant = {
-            leftover: 100, // set leftover to a high number to update on the first loop iteration
-            variant: {}
-          };
-          // loop over the entries in the kit and destructure the coverage (key) and the variant (value)
-          for (const [coverage, variant] of Object.entries(kit)) {
-            // subtract the required sqft from the coverage to see how much is leftover
-            const leftover = Number(coverage) - Number(sqft);
-            // if the leftover is smaller than the currentVariant leftover (above) and the value isn't less than zero
-            if (leftover <= currentVariant.leftover && leftover >= 0) {
-              // update the leftover and variant in the currentVariant object
-              currentVariant.leftover = leftover;
-              currentVariant.variant = variant;
+          // set an iterations to prevent endless loops
+          let iterations = 0;
+          // initially set remainingSqft to the total sqft required
+          let remainingSqft = sqft;
+          while(true) {
+            // if the loop iterates more than 20 times, break out of the loop
+            if (iterations >= 20) break;
+            // if the remainingSqft is lessthan or equalto zero, break
+            if (remainingSqft <= 0) break;
+            // sort the kit variants from greatest to least (arrays always sort lowest to highest by default)
+            const sortedKit = Object.entries(kit).sort((a, b) => b[0] - a[0]);
+            // loop over the kit variants
+            for (const [coverage, variant] of sortedKit) {
+              // subtract the coverage of the kit from the remaining sqft
+              const leftover = Number(remainingSqft) - Number(coverage);
+              // if it has a leftover
+              if (leftover >= 0) {
+                // push the variant to the kits required
+                kitsRequired.push(variant);
+                // set the remainingSwft to the leftover for the next iteration
+                remainingSqft = leftover;
+              }
             }
+            // increment the iterations
+            iterations++;
+          }
+
+          if (remainingSqft > 0) {
+            kitsRequired.push(kit['10'])
           }
           // update local storage
           pbUpdateStorage('project_system', {
             name: choice.value,
-            sku: currentVariant.variant.sku
+            sku: kitsRequired
           });
 
           document.getElementById("temp1-next").style.position = "relative";
@@ -272,5 +304,5 @@
 
     // Start observing the target node for configured mutations
     observer.observe(document.getElementById('progress-bar'), { attributes: true, childList: true, subtree: true });
-  })();
+  })(kits);
 </script>

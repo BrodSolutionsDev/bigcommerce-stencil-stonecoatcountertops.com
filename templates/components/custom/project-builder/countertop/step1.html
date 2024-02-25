@@ -47,47 +47,6 @@
     const sqftInput = document.getElementById('total-sqft');
     pbUpdateStorage('sqft', Number(sqftInput.value));
   });
-  // window.addEventListener("load", function () {
-  //   // console.log("loaded")
-  //   // console.log(window.getCurrentStep)
-  //   const currentStep = this.getCurrentStep();
-  //   if (currentStep !== 1) return;
-  //   // grab the total sqft input
-  //   const sqftInput = document.getElementById('total-sqft');
-  //   // disabled the 'next' button by default
-  //   // document.getElementById('amount-next').disabled = true
-  //   // listen for a user manually changing the input
-  //   sqftInput.addEventListener('change', function (e) {
-  //     console.log("change", e.target.value)
-  //     document.getElementById("addBacksplash").checked = false;
-  //     pbUpdateStorage('sqft', Number(e.target.value));
-  //   });
-
-  //   document.querySelector('mobile-next').addEventListener("click", function () {
-  //     const sqftInput = document.getElementById('total-sqft');
-  //     pbUpdateStorage('sqft', Number(sqftInput.value));
-  //   })
-
-  //   // listen for the user calculating the input via the calculator
-
-  // })
-
-  // ((input) => {
-
-  //   // Callback function to execute when mutations are observed
-  //   const callback = (mutationList, observer) => {
-  //     const currentStep = window.getCurrentStep();
-  //     console.log("callback")
-  //     // sqftInput.value = sqftInput.dataset.total;
-  //     // pbUpdateStorage('sqft', Number(input.value));
-  //   };
-
-  //   // Create an observer instance linked to the callback function
-  //   const observer = new MutationObserver(callback);
-
-  //   // Start observing the target node for configured mutations
-  //   observer.observe(input, { attributes: true });
-  // })(sqftInput);
 </script>
 
 <script>

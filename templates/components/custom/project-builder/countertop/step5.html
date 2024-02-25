@@ -58,12 +58,12 @@
 </div>
 
 <script>
+  // set the initial addToCartArr to an empty array
   let addToCartArr = [];
 
   const callback = async (mutationList, observer) => {
     // don't run any code unless the currentStep is on 4
     if (currentStep !== 5) return;
-    addToCartArr = [];
     // set the add to cart text to Add to Cart every time this function is ran
     document.getElementById('atc').innerText = 'Add to Cart';
     // set the add to cart button to "not disabled" every time this function is ran
@@ -95,40 +95,89 @@
       document.querySelector('.undercoat-color-results').style.display = 'block';
     }
 
-    // update coverage results based on the kit coverage
-    if (requirements.sqft <= 10) {
-      document.getElementById('coverage-results').innerText = '10';
-    } else if (requirements.sqft <= 20) {
-      document.getElementById('coverage-results').innerText = '20';
-    } else if (requirements.sqft <= 40) {
-      document.getElementById('coverage-results').innerText = '40';
-    } else if (requirements.sqft <= 80) {
-      document.getElementById('coverage-results').innerText = '80';
-    }
+    // grab the arary of skus from the project system, add up all the coverage based on sku, display the results on the coverage-results element
+    document.getElementById("coverage-results").innerText = Array.from(requirements['project_system'].sku).reduce((acc, curr) => {
+      // get the name of the project system used (example: Baltic Brown)
+      const kit = kits[JSON.parse(localStorage.getItem('project-requirements'))['project_system'].name];
+      // get all the variants from the kit
+      const kitArr = Object.entries(kit);
+      // filter out the kit variant based on the sku from the project_system sku array
+      const variant = kitArr.filter(([coverage, value]) => value.sku === curr.sku)[0];
+      // add the coverage to the accumulator 
+      return acc + Number(variant[0])
+    }, 0);
 
     const detailsArr = [];
     for (const [key, value] of Object.entries(requirements)) {
       if (key === 'undercoat_color' && value.name === 'Grey') {
         continue;
+      // if the sku is an array of skus (project_system)
+      } else if (Array.isArray(value.sku)) {
+        value.sku.forEach(v => detailsArr.push(getProductDetails(v.sku)));
+        continue;
       }
       detailsArr.push(getProductDetails(value.sku));
     }
 
-    if (requirements['project_system'].name === "Custom") {
-      console.log("add epoxy gallon kits")
-      if (requirements.sqft <= 10) {
-        requirements['gallon_kits'].sku = "SCCE64OZK"
-        detailsArr.push(getProductDetails('SCCE64OZK'));
-      } else if (requirements.sqft <= 20) {
-        requirements['gallon_kits'].sku = "SCCE1GK"
-        detailsArr.push(getProductDetails('SCCE1GK'));
-      } else if (requirements.sqft <= 40) {
-        requirements['gallon_kits'].sku = "SCCE2GK"
-        detailsArr.push(getProductDetails('SCCE2GK'));
-      } else if (requirements.sqft <= 80) {
-        requirements['gallon_kits'].sku = "SCC4GAL"
-        detailsArr.push(getProductDetails('SCC4GAL'));
+    if (requirements['project_system'].name === 'Custom') {
+      // epoxy gallon kit skus and coverage
+      const gallonKit = {
+        'Epoxy Gallon Kits': {
+          80: { sku: 'SCC4GAL' },
+          40: { sku: 'SCCE2GK' },
+          20: { sku: 'SCCE1GK' },
+          10: { sku: 'SCCE64OZK' }
+        }
       }
+
+      const gallonKitsRequired = [];
+      // grab the required kit from the kits object based on the choice
+      const kit = gallonKit['Epoxy Gallon Kits'];
+      // set an iterations to prevent endless loops
+      let iterations = 0;
+      // initially set remainingSqft to the total sqft required
+      let remainingSqft = Number(requirements['sqft']);
+      while(true) {
+        // if the loop iterates more than 20 times, break out of the loop
+        if (iterations >= 20) break;
+        // if the remainingSqft is lessthan or equalto zero, break
+        if (remainingSqft <= 0) break;
+        // sort the kit variants from greatest to least (arrays always sort lowest to highest by default)
+        const sortedKit = Object.entries(kit).sort((a, b) => b[0] - a[0]);
+        // loop over the kit variants
+        for (const [coverage, variant] of sortedKit) {
+          // subtract the coverage of the kit from the remaining sqft
+          const leftover = Number(remainingSqft) - Number(coverage);
+          // if it has a leftover
+          if (leftover >= 0) {
+            // push the variant to the kits required
+            gallonKitsRequired.push(variant);
+            // set the remainingSwft to the leftover for the next iteration
+            remainingSqft = leftover;
+          }
+        }
+        // increment the iterations
+        iterations++;
+      }
+
+      if (remainingSqft > 0) {
+        gallonKitsRequired.push(kit['10'])
+      }
+
+      requirements['gallon_kits'].sku = gallonKitsRequired;
+      gallonKitsRequired.forEach(kit => detailsArr.push(getProductDetails(kit.sku)))
+
+      // grab the arary of skus from the project system, add up all the coverage based on sku, display the results on the coverage-results element
+      document.getElementById("coverage-results").innerText = Array.from(requirements['gallon_kits'].sku).reduce((acc, curr) => {
+        // get the name of the project system used (example: Baltic Brown)
+        const kit = gallonKit['Epoxy Gallon Kits'];
+        // get all the variants from the kit
+        const kitArr = Object.entries(kit);
+        // filter out the kit variant based on the sku from the project_system sku array
+        const variant = kitArr.filter(([coverage, value]) => value.sku === curr.sku)[0];
+        // add the coverage to the accumulator 
+        return acc + Number(variant[0])
+      }, 0);
     }
 
     // push the undercoat_color requirements to the details array
@@ -164,7 +213,6 @@
         const { name, sku } = value;
         // if either name or sku is null, continue in the loop
         if (name === null || sku === null || sku === undefined) continue;
-        // console.log('SKU: ', sku);
         if (sku.includes('__')) {
           // grey undercoat
           skus.push({
@@ -177,6 +225,13 @@
             name: name,
             key: key
           });
+        // project_system or epoxy gallon kit sku array
+        } else if (Array.isArray(sku)) {
+          sku.forEach(s => skus.push({
+            sku: s.sku,
+            name: name,
+            key: key
+          }))
         } else {
           // everything else
           skus.push({
@@ -188,59 +243,69 @@
       }
       return skus;
     }
+    // create an object to loop over for creating "cart cards"
+    const cards = {};
 
-    for (const { sku, name, key } of reqValues) {
-      if (sku === '') continue;
-      if (JSON.parse(localStorage.getItem('project-requirements'))['project_system'].name !== 'Custom') {
-        if (key === 'primary_color' || key === 'secondary_color' || key === 'accent_color') continue;
-      }
-      // get the value from the GraphQL results from the sku in the requirements
-      const { value } = results.filter(result => result.value.sku === sku)[0];
-      console.log('Value: ', value);
-      // get the variant from the value that matches the sku in the requirements
-      const variant = value.variants.filter(variant => variant.sku === value.sku)[0];
-      console.log('Variant: ', variant);
-      // add the color quantity based on color choice
-      let qty;
-      if (key === 'primary_color') qty = 6;
-      else if (key === 'secondary_color') qty = 3;
-      else qty = 1;
-      // create a div to add to the cart list
-      const cartItem = document.createElement('div');
-      cartItem.className = 'results-cart-item';
-      cartItem.dataset.price = value.sale_price ? value.sale_price : value.default_price;
-      // set the innerHTML of the div + add option line if there is a variant option
-      cartItem.innerHTML = `
-        <img class="results-cart-item__image" src="${value.image}" />
-        <h4 class="results-cart-item__title"><a href="${value.url}">${value.name.toUpperCase()}</a></h4>
-        ${variant.options.length
-          ? `<p class="results-cart-item__option">${variant.options[0].name}: ${variant.options[0].values[0].label}</p>`
-          : ''
+    reqValues.forEach(v => {
+      // if the cards object does not have an entry for the value name
+      if (!cards[v.name]) cards[v.name] = {};
+      // if the cards object does not have an entry for the sku name inside the value name object
+      if (!cards[v.name][v.sku]) cards[v.name][v.sku] = {};
+      // if the sku inside the value name object does not have a quantity
+      if (!cards[v.name][v.sku].qty) cards[v.name][v.sku].qty = 1;
+      // otherwise, incremenent that sku's quantity by 1
+      else cards[v.name][v.sku].qty = ++cards[v.name][v.sku].qty
+    });
+
+    // reset the addToCartArr before creating new cards
+    addToCartArr = [];
+
+    for (const [kit, data] of Object.entries(cards)) {
+      if (kit === "Custom") continue;
+      for (let [sku, qty] of Object.entries(data)) {
+        if (!sku) continue;
+        if (requirements['primary_color'].sku === sku) qty.qty *= 6;
+        if (requirements['secondary_color'].sku === sku) qty.qty *= 3;
+
+        const { value } = results.filter(result => result.value.sku === sku)[0];
+        const variant = value.variants.filter(variant => variant.sku === value.sku)[0];
+        // create a div to add to the cart list
+        const cartItem = document.createElement('div');
+        cartItem.className = 'results-cart-item';
+        cartItem.dataset.price = value.sale_price ? value.sale_price : value.default_price;
+        // set the innerHTML of the div + add option line if there is a variant option
+        cartItem.innerHTML = `
+          <img class="results-cart-item__image" src="${value.image}" />
+          <h4 class="results-cart-item__title"><a href="${value.url}">${value.name.toUpperCase()}</a></h4>
+          ${variant.options.length
+            ? `<p class="results-cart-item__option">${variant.options[0].name}: ${variant.options[0].values[0].label}</p>`
+            : ''
+          }
+          <p class="results-cart-item__quantity">Quantity: ${qty.qty}</p>
+          `;
+        // append the div to the cart list
+        document.getElementById('results-cart-list').appendChild(cartItem);
+        // add the data to the cart array
+        if (variant.options.length) {
+          // if the variant has options
+          addToCartArr.push({
+            product_id: value.id,
+            variant: {
+              option_id: variant.options[0].option_id,
+              value_id: variant.options[0].values[0].value_id
+            },
+            qty: qty.qty,
+            price: value.sale_price ? value.sale_price : value.default_price
+          });
+        } else {
+          // if the variant does NOT have options
+          addToCartArr.push({
+            product_id: value.id,
+            variant: null,
+            qty: qty.qty,
+            price: value.sale_price ? value.sale_price : value.default_price
+          });
         }
-        <p class="results-cart-item__quantity">Quantity: ${qty}</p>
-        `;
-      // append the div to the cart list
-      document.getElementById('results-cart-list').appendChild(cartItem);
-      // add the data to the cart array
-      if (variant.options.length) {
-        // if the variant has options
-        addToCartArr.push({
-          product_id: value.id,
-          variant: {
-            option_id: variant.options[0].option_id,
-            value_id: variant.options[0].values[0].value_id
-          },
-          qty,
-          price: value.sale_price ? value.sale_price : value.default_price
-        });
-      } else {
-        // if the variant does NOT have options
-        addToCartArr.push({
-          product_id: value.id,
-          variant: null,
-          qty,
-          price: value.sale_price ? value.sale_price : value.default_price
-        });
       }
     }
 
