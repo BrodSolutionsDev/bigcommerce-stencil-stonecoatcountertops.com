@@ -37,34 +37,3 @@
     </div>
   </div>
 </div>
-
-<script>
-  (function () {
-    const projectFinish = document.querySelector("[name='project_finish']");
-
-    const callback = async (mutationList, observer) => {
-      if (currentStep !== 4) return;
-      let finishChoice = Array.from(projectFinish.children).filter(child => child.value === projectFinish.value)[0];
-
-      pbUpdateStorage('project_finish', {
-        name: finishChoice.value,
-        sku: finishChoice.dataset.sku
-      });
-
-      projectFinish.addEventListener('change', function (e) {
-        finishChoice = Array.from(projectFinish.children).filter(child => child.value === projectFinish.value)[0];
-
-        pbUpdateStorage('project_finish', {
-          name: finishChoice.value,
-          sku: finishChoice.dataset.sku
-        });
-      });
-    };
-
-    // Create an observer instance linked to the callback function
-    const observer = new MutationObserver(callback);
-
-    // Start observing the target node for configured mutations
-    observer.observe(document.getElementById('progress-bar'), { attributes: true, childList: true, subtree: true });
-  })();
-</script>

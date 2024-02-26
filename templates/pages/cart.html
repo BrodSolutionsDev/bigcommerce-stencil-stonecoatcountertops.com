@@ -52,5 +52,14 @@ cart: true
 
     </main>
 </div>
+
+<script>
+    function clearCartFunction() {
+      fetch("/api/storefront/carts/{{cart_id}}", {method: 'DELETE', headers: {'Content-Type': 'application/json'}})
+        .then(() => window.location.reload())
+        .catch(err => console.error(err));
+    }
+    window.clearCart = clearCartFunction;
+  </script>
 {{/partial}}
 {{> layout/base}}

@@ -21,7 +21,7 @@
   </div>
 </div>
 <div style="display: flex; justify-content: flex-end;">
-<button class="button button--primary" id="startOver">Start Over</button>
+  <button class="button button--primary" id="startOver">Start Over</button>
 </div>
 <p class="pb-disclaimer"><strong>Disclaimer</strong>:
   Stone Coat Countertops offers no warranty, either expressed or implied, as to the reliability of the information
@@ -109,7 +109,7 @@
 
   let projectRequirements;
   // starting requirements
-  if (localStorage.getItem("startOver") === "true") {
+  if (localStorage.getItem("startOver") === null || localStorage.getItem("startOver") === "true") {
     projectRequirements = {
       sqft: 0,
       project_type: {
@@ -454,7 +454,11 @@
           Number(document.querySelector('.cart-quantity').innerText) + Number(item.qty);
         // set the innerText of the add to cart button to show it's still working
         document.getElementById('atc').innerText = 'Adding to Cart';
+        document.getElementById('atc').disabled = true;
         // run the function again
+        setTimeout(() => {
+          console.log("waiting half a second...")
+        }, 500);
         return addToCart(cartArr);
       } else {
         document.querySelector('.cart-quantity').innerText =
@@ -827,17 +831,15 @@
   });
 
   if (localStorage.getItem("startOver") === "false") {
-    console.log("Go to step 5")
     setCurrentStep(5);
     calculatorProgress(5);
     currentStep = 5;
     document.getElementById("startOver").setAttribute("style", "display: block !important");
   } else {
-    console.log("start from beginning")
     document.getElementById("startOver").setAttribute("style", "display: none !important");
   }
 
-  document.getElementById("startOver").addEventListener("click", function(e) {
+  document.getElementById("startOver").addEventListener("click", function (e) {
     e.preventDefault();
 
     localStorage.setItem("startOver", "true");
@@ -845,5 +847,717 @@
   });
 </script>
 
+<!-- EACH STEP CODE -->
+
+<script>
+  (function () {
+    // ================================================
+    // STEP 1 - PROJECT CALCULATOR
+    // ================================================
+    const totalSqFtInput = document.getElementById('total-sqft');
+    const addBacksplashInput = document.getElementById("addBacksplash");
+    // surfaceValues and cutoutValues are required to validate that both inputs are filled out on 'help calculate'
+    const surfaceValues = {};
+    const cutoutValues = {};
+
+    // listen for sqft input change, update storage on change
+    totalSqFtInput.addEventListener('change', function (e) {
+      // uncheck the backsplash input if manually changing the sq footage
+      document.getElementById("addBacksplash").checked = false;
+      pbUpdateStorage('sqft', Number(e.target.value));
+    });
+    // listen for 'amount-next' (next button for step 1) to be clicked and update storage on click
+    document.getElementById("amount-next").addEventListener("click", function () {
+      pbUpdateStorage('sqft', Number(totalSqFtInput.value));
+    });
+
+
+    // add the value of only the edited surface inputs
+    document.getElementById('modal-calculations').addEventListener('change', function (e) {
+      // only grab the target if it has this class
+      const input = e.target.closest('.countertop-surface-dimensions');
+      if (!input) return;
+      if (Number(input.value) === 0) return;
+      // destructure the section name and dimension name from the id of the input
+      const [section, dimension] = input.id.split('-');
+      // if no section exists in the surface values input, add an empty object
+      if (!surfaceValues[section]) surfaceValues[section] = {};
+      // set the value to the value of the input
+      surfaceValues[section][dimension] = {
+        value: Number(input.value),
+        element: input
+      };
+    });
+
+    // add the value of only the edited cutout inputs
+    document.getElementById('modal-calculations').addEventListener('change', function (e) {
+      // only grab the target if it has this class
+      const input = e.target.closest('.countertop-cutout-dimensions');
+      if (!input) return;
+      // destructure the section name and dimension name from the id of the input
+      // second comma is required since the id has two dashes
+      const [section, , dimension] = input.id.split('-');
+      // if no section exists in the surface values input, add an empty object
+      if (!cutoutValues[section]) cutoutValues[section] = {};
+      // set the value to the value of the input
+      cutoutValues[section][dimension] = {
+        value: Number(input.value),
+        element: input
+      };
+    });
+
+    function validateInputsReturnTotals(event, valuesObj) {
+      let tempTotal = 0;
+      for (const section of Object.values(valuesObj)) {
+        if (Object.values(section).length < 2) {
+          const invalidElement = Object.values(section)[0].element || Object.values(section)[1].element;
+          invalidElement.closest('.help-calculate-inputs').style.background = 'rgba(255, 0, 0, .25)';
+          document.getElementById('calculate-help-inputs').style.display = 'block';
+          event.stopImmediatePropagation();
+          return;
+        } else {
+          const invalidElement = Object.values(section)[0].element || Object.values(section)[1].element;
+          invalidElement.closest('.help-calculate-inputs').style.background = 'transparent';
+          document.getElementById('calculate-help-inputs').style.display = 'none';
+        }
+        // add the length * width of the sections to the total
+        tempTotal += calculateTotalSqFt(section);
+      }
+      return tempTotal;
+    }
+
+    const calculateTotalSqFt = arr => Object.values(arr).reduce((acc, cur) => acc.value * cur.value);
+
+    document.getElementById('calculate-amount-button').addEventListener('click', function (e) {
+      // uncheck the backsplash button if updating calculations - prevents add 10% bugs
+      document.getElementById("addBacksplash").checked = false;
+      // set the total to zero to reset the value every time
+      // loop over the surface value sections
+      let totalSurface = validateInputsReturnTotals(e, surfaceValues);
+      let totalCutout = validateInputsReturnTotals(e, cutoutValues);
+
+      if (totalSurface === undefined || totalCutout === undefined) return;
+
+      if (totalCutout > totalSurface) {
+        e.stopImmediatePropagation();
+        document.getElementById('calculate-help-amounts').style.display = 'block';
+        return;
+      } else {
+        document.getElementById('calculate-help-amounts').style.display = 'none';
+        // set the total sq ft input in step 1 to the value, fixed to two decimal places
+        totalSqFtInput.dataset.total = ((totalSurface - totalCutout) / 144).toFixed(2);
+        totalSqFtInput.value = totalSqFtInput.dataset.total;
+        pbUpdateStorage('sqft', Number(totalSqFtInput.dataset.total));
+        document.getElementById("help-calculate-modal").removeAttribute("open");
+      }
+    });
+
+    document.getElementById("addBacksplash-section").addEventListener("click", function (e) {
+      // flip the checkbox to checked/unchecked if clicked
+      addBacksplashInput.checked = !addBacksplashInput.checked;
+      // grab the sqft from storage (sqft is updated on calculate or input change)
+      const sqft = JSON.parse(localStorage.getItem("project-requirements"))['sqft'];
+
+      if (addBacksplashInput.checked) {
+        // add 10%
+        totalSqFtInput.value = (Number(totalSqFtInput.value) + Number(sqft * .1)).toFixed(2);
+      } else {
+        // remove 10%
+        totalSqFtInput.value = (Number(totalSqFtInput.value) - Number(sqft * .1)).toFixed(2);
+      }
+    });
+
+    // ================================================
+    // STEP 2 - COUNTERTOP COLOR FINISH
+    // ================================================
+    const projectSystem = document.querySelector("[name='project_system']");
+    const kits = {
+      'Baltic Brown': {
+        80: { sku: 'SCBBE4GAL' },
+        40: { sku: 'SCBBE2GAL' },
+        20: { sku: 'SCBBE1GAL' },
+        10: { sku: 'SCBBEHALF' }
+      },
+      'Black Exotic Marble': {
+        80: { sku: 'SCCBLKMARBLE4' },
+        40: { sku: 'SCCBLKMARBLE2' },
+        20: { sku: 'SCCBLKMARBLE1' },
+        10: { sku: 'SCCBLKMARBLEHALF' }
+      },
+      'Black Galaxy': {
+        80: { sku: 'SCBGE4GAL' },
+        40: { sku: 'SCBGE2GAL' },
+        20: { sku: 'SCBGE1GAL' },
+        10: { sku: 'SCBGEHALF' }
+      },
+      'Black Marble': {
+        80: { sku: 'SCBME4GAL' },
+        40: { sku: 'SCBME2GAL' },
+        20: { sku: 'SCBME1GAL' },
+        10: { sku: 'SCBMEHALF' }
+      },
+      'Blue Fractured Granite': {
+        80: { sku: 'SCBFG4GAL' },
+        40: { sku: 'SCBFG2GAL' },
+        20: { sku: 'SCBFG1GAL' },
+        10: { sku: 'SCBFGHALF' }
+      },
+      'Caramel Marble': {
+        80: { sku: 'SCCARMELKIT4' },
+        40: { sku: 'SCCARMELKIT2' },
+        20: { sku: 'SCCARMELKIT1' },
+        10: { sku: 'SCCARMELKITHALF' }
+      },
+      'Carrara Marble Exotic': {
+        80: { sku: 'SCCME4GAL' },
+        40: { sku: 'SCCME2GAL' },
+        20: { sku: 'SCCME1GAL' },
+        10: { sku: 'SCCMEHALF' }
+      },
+      'Natural Earth Tones': {
+        80: { sku: 'SCSPEARTHTONE4' },
+        40: { sku: 'SCSPEARTHTONE2' },
+        20: { sku: 'SCSPEARTHTONE1' },
+        10: { sku: 'SCSPEARTHTON1/2' }
+      },
+      'White Exotic Marble': {
+        80: { sku: 'SCCWHTMARBLE4GA' },
+        40: { sku: 'SCCWHTMARBLE2GA' },
+        20: { sku: 'SCCWHTMARBLE1GA' },
+        10: { sku: 'SCCWHTMARBLEHAL' }
+      }
+    };
+
+    // get the initial kit choice (before user changes) in case they don't select a different kit
+    // grab the kits after the user clicks "next" on the previous step (otherwise, the sqft is set to 1)
+    document.getElementById("amount-next").addEventListener("click", () => getRequiredKits(kits));
+
+    // update the requiredKits on user selection
+    projectSystem.addEventListener('change', () => getRequiredKits(kits));
+
+    function getRequiredKits(kits) {
+      // An array of kits needed to fulfill the project
+      const kitsRequired = [];
+      // grab the sqft from localStorage to grab the correct kit size
+      const sqft = JSON.parse(localStorage.getItem('project-requirements'))['sqft'];
+      // get the choice from the kit dropdown (before listening for change in case user doesn't change kit)
+      let choice = Array.from(document.getElementById('system').children).filter(
+        child => child.value === document.getElementById('system').value
+      )[0];
+      if (choice.value !== 'Custom') {
+        // grab the required kit from the kits object based on the choice
+        let kit = kits[choice.innerText];
+
+        if (sqft <= 10) kitsRequired.push(kit['10']);
+        else if (sqft <= 20) kitsRequired.push(kit['20']);
+        else if (sqft <= 40) kitsRequired.push(kit['40']);
+        else if (sqft <= 80) kitsRequired.push(kit['80']);
+        else {
+          // set an iterations to prevent endless loops
+          let iterations = 0;
+          // initially set remainingSqft to the total sqft required
+          let remainingSqft = sqft;
+          while (true) {
+            // if the loop iterates more than 20 times, break out of the loop
+            if (iterations >= 20) break;
+            // if the remainingSqft is lessthan or equalto zero, break
+            if (remainingSqft <= 0) break;
+            // sort the kit variants from greatest to least (arrays always sort lowest to highest by default)
+            const sortedKit = Object.entries(kit).sort((a, b) => b[0] - a[0]);
+            // loop over the kit variants
+            for (const [coverage, variant] of sortedKit) {
+              // subtract the coverage of the kit from the remaining sqft
+              const leftover = Number(remainingSqft) - Number(coverage);
+              // if it has a leftover
+              if (leftover >= 0) {
+                // push the variant to the kits required
+                kitsRequired.push(variant);
+                // set the remainingSwft to the leftover for the next iteration
+                remainingSqft = leftover;
+              }
+            }
+            // increment the iterations
+            iterations++;
+          }
+
+          if (remainingSqft > 0) {
+            kitsRequired.push(kit['10'])
+          }
+        }
+        // update local storage
+        pbUpdateStorage('project_system', {
+          name: choice.value,
+          sku: kitsRequired
+        });
+
+        document.getElementById("temp1-next").style.position = "relative";
+        document.getElementById("temp1-next").style.bottom = 'unset';
+      } else {
+        // update local storage
+        pbUpdateStorage('project_system', {
+          name: 'Custom',
+          sku: ''
+        });
+
+        document.getElementById("temp1-next").style.position = "sticky";
+        document.getElementById("temp1-next").style.bottom = 0;
+      }
+    }
+
+    // ================================================
+    // STEP 3 - PROJECT SURFACE
+    // ================================================
+    const projectSurface = document.querySelector("[name='project_surface']");
+    const projectUndercoat = document.querySelector("[name='undercoat_color']");
+
+    // check for the height of step 3 when the previous steps "next" button is hit
+    document.getElementById("temp1-next").addEventListener("click", function () {
+      // wait for 100ms (1/10 of a second). If fired immediately, the window will not have loaded to verify the height
+      setTimeout(() => {
+        if (document.getElementById("stateAndUndercoat").scrollHeight > 700) {
+          document.getElementById("state-next").style.position = "sticky";
+          document.getElementById("state-next").style.bottom = 0;
+        } else {
+          document.getElementById("state-next").style.position = "relative";
+          document.getElementById("state-next").style.bottom = "unset";
+        }
+      }, 100);
+
+      if (JSON.parse(localStorage.getItem('project-requirements'))['project_system'].name !== 'Custom') {
+        document.getElementById('project-undercoat').style.display = 'none';
+        document.getElementById('undercoat-help-text').style.display = 'none';
+
+        let surfaceChoice = Array.from(projectSurface.children).filter(
+          child => child.value === projectSurface.value
+        )[0];
+
+        let undercoatChoice = Array.from(projectUndercoat.children).filter(
+          child => child.value === projectUndercoat.value
+        )[0];
+
+        pbUpdateStorage("project_type", {
+          name: surfaceChoice.value,
+          sku: surfaceChoice.dataset.sku
+        });
+
+        projectSurface.addEventListener("change", function (e) {
+          surfaceChoice = Array.from(projectSurface.children).filter(
+            child => child.value === projectSurface.value
+          )[0];
+
+          pbUpdateStorage("project_type", {
+            name: surfaceChoice.value,
+            sku: surfaceChoice.dataset.sku
+          });
+        });
+      } else {
+        document.getElementById('project-undercoat').style.display = 'block';
+        document.getElementById('undercoat-help-text').style.display = 'block';
+
+        let surfaceChoice = Array.from(projectSurface.children).filter(
+          child => child.value === projectSurface.value
+        )[0];
+
+        pbUpdateStorage("project_type", {
+          name: surfaceChoice.value,
+          sku: surfaceChoice.dataset.sku
+        });
+
+        let undercoatChoice = Array.from(projectUndercoat.children).filter(
+          child => child.value === projectUndercoat.value
+        )[0];
+
+        pbUpdateStorage("undercoat_color", {
+          name: undercoatChoice.value,
+          sku: undercoatChoice.dataset.sku
+        });
+
+        projectSurface.addEventListener('change', function () {
+          surfaceChoice = Array.from(projectSurface.children).filter(
+            child => child.value === projectSurface.value
+          )[0];
+
+          pbUpdateStorage("project_type", {
+            name: surfaceChoice.value,
+            sku: surfaceChoice.dataset.sku
+          });
+        })
+
+        projectUndercoat.addEventListener('change', function () {
+          undercoatChoice = Array.from(projectUndercoat.children).filter(
+            child => child.value === projectUndercoat.value
+          )[0];
+
+          pbUpdateStorage("undercoat_color", {
+            name: undercoatChoice.value,
+            sku: undercoatChoice.dataset.sku
+          });
+        });
+      }
+    });
+    // ================================================
+    // STEP 4 - TOP COAT OPTIONS
+    // ================================================
+    const projectFinish = document.querySelector("[name='project_finish']");
+
+    // grab the current choice for the finish dropdown BEFORE a user makes a selection
+    let finishChoice = Array.from(projectFinish.children).filter(child => child.value === projectFinish.value)[0];
+    pbUpdateStorage('project_finish', {
+      name: finishChoice.value,
+      sku: finishChoice.dataset.sku
+    });
+    // grab the user selected finish dropdown option
+    projectFinish.addEventListener('change', function (e) {
+      finishChoice = Array.from(projectFinish.children).filter(child => child.value === projectFinish.value)[0];
+
+      pbUpdateStorage('project_finish', {
+        name: finishChoice.value,
+        sku: finishChoice.dataset.sku
+      });
+    });
+
+    // ================================================
+    // STEP 5 - RESULTS
+    // ================================================
+    // set the initial addToCartArr to an empty array
+    let addToCartArr = [];
+
+    window.addEventListener("load", function () {
+      if (currentStep === 5) {
+        step5();
+      }
+    })
+
+    // run the following code only AFTER the previous step's "next" button is clicked
+    document.getElementById("finish-next").addEventListener("click", () => step5());
+    // ---------------------------------------------------
+    // ADD THE ITEMS TO CART ON BUTTON CLICK
+    // ---------------------------------------------------
+    // fire off the addToCart function when the add to cart button is clicked
+    document.getElementById('atc').addEventListener('click', function (e) {
+      addToCart(addToCartArr);
+    });
+    // ---------------------------------------------------
+    // SEND THE DATA TO MY.POLYTEK IF SAVE FOR LATER IS CLICKED
+    // ---------------------------------------------------
+    // Assuming you have a button with id 'sfl'
+    /*
+    document.getElementById('sfl').addEventListener('click', function () {
+      // present a modal with Email and Name fields
+
+      // Your project requirements data
+      const projectRequirements = {
+        // @ BRAD:  what else needs to be included?
+        // Cart Object?
+        // Customer ID?
+        // Referral URL?
+        // For now, the API will accept all of the body data as a single object, so please include all necessary data here
+        store_hash: 'fy21dwtsxg',
+        project_data: JSON.parse(localStorage.getItem('project-requirements')),
+        cart_array: addToCartArr
+      };
+
+      // Post data to the endpoint
+      fetch('https://my.polytek.com/api/calculation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(projectRequirements)
+      })
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById('sfl').innerText = "Saved!"
+          console.log(data)
+        })
+        .catch(error => {
+          document.getElementById('sfl').innerText = "An error occurred"
+          console.error('Error:', error);
+        });
+    });
+    */
+    const step5 = async function () {
+      // user made it to the final step, store data until user manually starts over
+      localStorage.setItem("startOver", "false");
+      document.getElementById("startOver").setAttribute("style", "display: block !important");
+      // clear the cart list to append updated values every time this is ran
+      document.getElementById('results-cart-list').innerHTML = null;
+      // set the add to cart text to Add to Cart every time this function is ran
+      document.getElementById('atc').innerText = 'Add to Cart';
+      // set the add to cart button to "not disabled" every time this function is ran
+      document.getElementById('atc').disabled = false;
+      // grab the requirements from the localStorage object
+      const requirements = JSON.parse(localStorage.getItem('project-requirements'));
+      // ---------------------------------------------------
+      // UPDATE PROJECT REQUIREMENTS ON LEFT SIDE OF STEP 5
+      // ---------------------------------------------------
+      // loop over the requirements to append to the DOM (project requirements list)
+      for (const [key, value] of Object.entries(requirements)) {
+        if (key !== 'sqft') {
+          // if the key does not equal sqft
+          // destructure the name and sku from the object entry
+          const { name, sku } = value;
+          // if there is no value, skip this iteration
+          if (value === '' || key === 'gallon_kits') continue;
+          // display the selected requirement next to the name in the requirement list (ex: Project Surface: Existing Countertop)
+          document.getElementById(`${key}-results`).innerHTML = name;
+        } else {
+          // if the key DOES equal sqft, set the number as the name in the requirment list (ex: Total Square Footage: 22 sqft)
+          document.getElementById(`${key}-results`).innerHTML = value;
+        }
+      }
+      // Show/hide the custom color selections from the requirement list in the DOM if custom colors were/were not chosen
+      if (requirements['project_system'].name !== 'Custom') {
+        document.querySelectorAll('.custom-color-results').forEach(color => (color.style.display = 'none'));
+        document.querySelector('.undercoat-color-results').style.display = 'none';
+      } else {
+        document.querySelectorAll('.custom-color-results').forEach(color => (color.style.display = 'block'));
+        document.querySelector('.undercoat-color-results').style.display = 'block';
+      }
+      // grab the arary of skus from the project system, add up all the coverage based on sku, display the results on the coverage-results element
+      document.getElementById("coverage-results").innerText = Array.from(requirements['project_system'].sku).reduce((acc, curr) => {
+        // get the name of the project system used (example: Baltic Brown)
+        const kit = kits[JSON.parse(localStorage.getItem('project-requirements'))['project_system'].name];
+        // get all the variants from the kit
+        const kitArr = Object.entries(kit);
+        // filter out the kit variant based on the sku from the project_system sku array
+        const variant = kitArr.filter(([coverage, value]) => value.sku === curr.sku)[0];
+        // add the coverage to the accumulator 
+        return acc + Number(variant[0])
+      }, 0);
+      // ---------------------------------------------------
+      // GET DETAILS PER PRODUCT VIA GRAPHQL
+      // ---------------------------------------------------
+      const detailsArr = [];
+      for (const [key, value] of Object.entries(requirements)) {
+        if (key === 'undercoat_color' && value.name === 'Grey') {
+          continue;
+          // if the sku is an array of skus (project_system)
+        } else if (Array.isArray(value.sku)) {
+          value.sku.forEach(v => detailsArr.push(getProductDetails(v.sku)));
+          continue;
+        }
+        detailsArr.push(getProductDetails(value.sku));
+      }
+      // push the undercoat_color requirements to the details array
+      const undercoatColor = requirements['undercoat_color'];
+      if (undercoatColor.name) {
+        // if grey is the chosen color...
+        if (undercoatColor.sku.includes('__')) {
+          detailsArr.push(getProductDetails(undercoatColor.sku.split('__')[0]));
+          detailsArr.push(getProductDetails(undercoatColor.sku.split('__')[1]));
+        } else {
+          // otherwise, add the chosen color (black or white)
+          detailsArr.push(getProductDetails(undercoatColor.sku));
+        }
+      }
+      // ---------------------------------------------------
+      // IF CUSTOM SYSTEM, GET EPOXY GALLON KITS SKU(s)
+      // ---------------------------------------------------
+      if (requirements['project_system'].name === 'Custom') {
+        // epoxy gallon kit skus and coverage
+        const gallonKit = {
+          'Epoxy Gallon Kits': {
+            80: { sku: 'SCC4GAL' },
+            40: { sku: 'SCCE2GK' },
+            20: { sku: 'SCCE1GK' },
+            10: { sku: 'SCCE64OZK' }
+          }
+        }
+
+        const gallonKitsRequired = [];
+        // grab the required kit from the kits object based on the choice
+        const kit = gallonKit['Epoxy Gallon Kits'];
+        if (Number(requirements['sqft']) <= 10) gallonKitsRequired.push(kit['10']);
+        else if (Number(requirements['sqft']) <= 20) gallonKitsRequired.push(kit['20']);
+        else if (Number(requirements['sqft']) <= 40) gallonKitsRequired.push(kit['40']);
+        else if (Number(requirements['sqft']) <= 80) gallonKitsRequired.push(kit['80']);
+        else {
+          // set an iterations to prevent endless loops
+          let iterations = 0;
+          // initially set remainingSqft to the total sqft required
+          let remainingSqft = Number(requirements['sqft']);
+          while (true) {
+            // if the loop iterates more than 20 times, break out of the loop
+            if (iterations >= 20) break;
+            // if the remainingSqft is lessthan or equalto zero, break
+            if (remainingSqft <= 0) break;
+            // sort the kit variants from greatest to least (arrays always sort lowest to highest by default)
+            const sortedKit = Object.entries(kit).sort((a, b) => b[0] - a[0]);
+            // loop over the kit variants
+            for (const [coverage, variant] of sortedKit) {
+              // subtract the coverage of the kit from the remaining sqft
+              const leftover = Number(remainingSqft) - Number(coverage);
+              // if it has a leftover
+              if (leftover >= 0) {
+                // push the variant to the kits required
+                gallonKitsRequired.push(variant);
+                // set the remainingSwft to the leftover for the next iteration
+                remainingSqft = leftover;
+              }
+            }
+            // increment the iterations
+            iterations++;
+          }
+
+          if (remainingSqft > 0) {
+            gallonKitsRequired.push(kit['10'])
+          }
+        }
+        // update requirements with the epoxy gallon kits required skus
+        requirements['gallon_kits'].sku = gallonKitsRequired;
+        // get the epoxy gallon kits GraphQL data and push each product detail to the detailsArr
+        gallonKitsRequired.forEach(kit => detailsArr.push(getProductDetails(kit.sku)))
+
+        // ---------------------------------------------------
+        // UPDATE THE PROJECT TOTAL COVERAGE IN PROJECT REQUIREMENTS
+        // ---------------------------------------------------
+        // grab the arary of skus from the project system, add up all the coverage based on sku, display the results on the coverage-results element
+        document.getElementById("coverage-results").innerText = Array.from(requirements['gallon_kits'].sku).reduce((acc, curr) => {
+          // get the name of the project system used (example: Baltic Brown)
+          const kit = gallonKit['Epoxy Gallon Kits'];
+          // get all the variants from the kit
+          const kitArr = Object.entries(kit);
+          // filter out the kit variant based on the sku from the project_system sku array
+          const variant = kitArr.filter(([coverage, value]) => value.sku === curr.sku)[0];
+          // add the coverage to the accumulator 
+          return acc + Number(variant[0])
+        }, 0);
+      }
+      // ---------------------------------------------------
+      // GET THE GRAPHQL RESULTS AS USABLE OBJECTS
+      // ---------------------------------------------------
+      // getProductDetails returns a promise, return an array of settled promises
+      const settled = await Promise.allSettled(detailsArr);
+      // filter out the results with values from the settled array
+      const results = settled.filter(result => result.value);
+      // ---------------------------------------------------
+      // GET THE SKU, VARIANT/PRODUCT NAME, AND OBJECT KEY (KEY) FROM THE
+      // LOCALSTORAGE REQUIREMENTS OBJECT AS AN ARRAY
+      // ---------------------------------------------------
+      // return all the skus from the requirements
+      const reqValues = getValuesFromRequirements(Object.entries(requirements));
+
+      function getValuesFromRequirements(values) {
+        // store the skus in a temp array to return
+        const skus = [];
+        // loop over the requirement results
+        for (const [key, value] of values) {
+          // if the value is the sq ft requirement, continue in the loop
+          if (typeof value === 'number') continue;
+          // destructure the name and sku from the requirement
+          const { name, sku } = value;
+          // if either name or sku is null, continue in the loop
+          if (name === null || sku === null || sku === undefined) continue;
+          if (sku.includes('__')) {
+            // grey undercoat
+            skus.push({
+              sku: sku.split('__')[0],
+              name: name,
+              key: key
+            });
+            skus.push({
+              sku: sku.split('__')[1],
+              name: name,
+              key: key
+            });
+            // project_system or epoxy gallon kit sku array
+          } else if (Array.isArray(sku)) {
+            sku.forEach(s => skus.push({
+              sku: s.sku,
+              name: name,
+              key: key
+            }))
+          } else {
+            // everything else
+            skus.push({
+              sku: sku,
+              name: name,
+              key: key
+            });
+          }
+        }
+        return skus;
+      }
+      // ---------------------------------------------------
+      // MAP THE REQVALUES TO EASY TO USE DATA TO CREATE "CART" CARDS
+      // ---------------------------------------------------
+      // create an object to loop over for creating "cart cards"
+      const cards = {};
+
+      reqValues.forEach(v => {
+        // if the cards object does not have an entry for the value name
+        if (!cards[v.name]) cards[v.name] = {};
+        // if the cards object does not have an entry for the sku name inside the value name object
+        if (!cards[v.name][v.sku]) cards[v.name][v.sku] = {};
+        // if the sku inside the value name object does not have a quantity
+        if (!cards[v.name][v.sku].qty) cards[v.name][v.sku].qty = 1;
+        // otherwise, incremenent that sku's quantity by 1
+        else cards[v.name][v.sku].qty = ++cards[v.name][v.sku].qty
+      });
+
+      // ---------------------------------------------------
+      // CREATE THE "CART" CARDS ON THE RIGHT SIDE OF STEP 5
+      // ---------------------------------------------------
+      // reset the addToCartArr before creating new cards
+      addToCartArr = [];
+      for (const [kit, data] of Object.entries(cards)) {
+        if (kit === "Custom") continue;
+        for (let [sku, qty] of Object.entries(data)) {
+          if (!sku) continue;
+          if (requirements['primary_color'].sku === sku) qty.qty *= 6;
+          if (requirements['secondary_color'].sku === sku) qty.qty *= 3;
+
+          const { value } = results.filter(result => result.value.sku === sku)[0];
+          const variant = value.variants.filter(variant => variant.sku === value.sku)[0];
+          // create a div to add to the cart list
+          const cartItem = document.createElement('div');
+          cartItem.className = 'results-cart-item';
+          cartItem.dataset.price = value.sale_price ? value.sale_price : value.default_price;
+          // set the innerHTML of the div + add option line if there is a variant option
+          cartItem.innerHTML = `
+            <img class="results-cart-item__image" src="${value.image}" />
+            <h4 class="results-cart-item__title"><a href="${value.url}">${value.name.toUpperCase()}</a></h4>
+            ${variant.options.length
+              ? `<p class="results-cart-item__option">${variant.options[0].name}: ${variant.options[0].values[0].label}</p>`
+              : ''
+            }
+            <p class="results-cart-item__quantity">Quantity: ${qty.qty}</p>
+            `;
+          // append the div to the cart list
+          document.getElementById('results-cart-list').appendChild(cartItem);
+          // add the data to the cart array
+          if (variant.options.length) {
+            // if the variant has options
+            addToCartArr.push({
+              product_id: value.id,
+              variant: {
+                option_id: variant.options[0].option_id,
+                value_id: variant.options[0].values[0].value_id
+              },
+              qty: qty.qty,
+              price: value.sale_price ? value.sale_price : value.default_price
+            });
+          } else {
+            // if the variant does NOT have options
+            addToCartArr.push({
+              product_id: value.id,
+              variant: null,
+              qty: qty.qty,
+              price: value.sale_price ? value.sale_price : value.default_price
+            });
+          }
+        }
+      }
+      // ---------------------------------------------------
+      // UPDATE THE TOTAL PRICE BELOW CARDS
+      // ---------------------------------------------------
+      // loop over each total using the data-price attribute
+      const total = addToCartArr.reduce((acc, cur) => acc + Number(cur.price * cur.qty), 0)
+      // set the total in the DOM
+      document.getElementById('kit-total').innerHTML = `Kit Total: $${total.toFixed(2)}`;
+    };
+  })();
+</script>
 
 {{/partial}} {{> layout/base}}
