@@ -17,7 +17,7 @@
       <!-- 5) Results -->
       {{> components/custom/project-builder/countertop/step5 }}
     </div>
-    <button class="mobile-next continue calculator-button">Next</button>
+    <button id="mobile-next" class="mobile-next continue calculator-button">Next</button>
   </div>
 </div>
 <div style="display: flex; justify-content: flex-end;">
@@ -1557,6 +1557,87 @@
       // set the total in the DOM
       document.getElementById('kit-total').innerHTML = `Kit Total: $${total.toFixed(2)}`;
     };
+
+    document.getElementById("mobile-next").addEventListener("click", function () {
+      if (currentStep === 1) {
+        pbUpdateStorage('sqft', Number(totalSqFtInput.value));
+        getRequiredKits(kits);
+      }
+      if (currentStep === 2) {
+        if (JSON.parse(localStorage.getItem('project-requirements'))['project_system'].name !== 'Custom') {
+          document.getElementById('project-undercoat').style.display = 'none';
+          document.getElementById('undercoat-help-text').style.display = 'none';
+
+          let surfaceChoice = Array.from(projectSurface.children).filter(
+            child => child.value === projectSurface.value
+          )[0];
+
+          let undercoatChoice = Array.from(projectUndercoat.children).filter(
+            child => child.value === projectUndercoat.value
+          )[0];
+
+          pbUpdateStorage("project_type", {
+            name: surfaceChoice.value,
+            sku: surfaceChoice.dataset.sku
+          });
+
+          projectSurface.addEventListener("change", function (e) {
+            surfaceChoice = Array.from(projectSurface.children).filter(
+              child => child.value === projectSurface.value
+            )[0];
+
+            pbUpdateStorage("project_type", {
+              name: surfaceChoice.value,
+              sku: surfaceChoice.dataset.sku
+            });
+          });
+        } else {
+          document.getElementById('project-undercoat').style.display = 'block';
+          document.getElementById('undercoat-help-text').style.display = 'block';
+
+          let surfaceChoice = Array.from(projectSurface.children).filter(
+            child => child.value === projectSurface.value
+          )[0];
+
+          pbUpdateStorage("project_type", {
+            name: surfaceChoice.value,
+            sku: surfaceChoice.dataset.sku
+          });
+
+          let undercoatChoice = Array.from(projectUndercoat.children).filter(
+            child => child.value === projectUndercoat.value
+          )[0];
+
+          pbUpdateStorage("undercoat_color", {
+            name: undercoatChoice.value,
+            sku: undercoatChoice.dataset.sku
+          });
+
+          projectSurface.addEventListener('change', function () {
+            surfaceChoice = Array.from(projectSurface.children).filter(
+              child => child.value === projectSurface.value
+            )[0];
+
+            pbUpdateStorage("project_type", {
+              name: surfaceChoice.value,
+              sku: surfaceChoice.dataset.sku
+            });
+          })
+
+          projectUndercoat.addEventListener('change', function () {
+            undercoatChoice = Array.from(projectUndercoat.children).filter(
+              child => child.value === projectUndercoat.value
+            )[0];
+
+            pbUpdateStorage("undercoat_color", {
+              name: undercoatChoice.value,
+              sku: undercoatChoice.dataset.sku
+            });
+          });
+        }
+      }
+      if (currentStep === 4) step5();
+    })
   })();
 </script>
 
