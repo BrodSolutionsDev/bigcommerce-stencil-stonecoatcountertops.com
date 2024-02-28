@@ -851,6 +851,7 @@
 
 <script>
   (function () {
+    let cards = {};
     // ================================================
     // STEP 1 - PROJECT CALCULATOR
     // ================================================
@@ -1483,7 +1484,7 @@
       // MAP THE REQVALUES TO EASY TO USE DATA TO CREATE "CART" CARDS
       // ---------------------------------------------------
       // create an object to loop over for creating "cart cards"
-      const cards = {};
+      cards = {};
 
       reqValues.forEach(v => {
         // if the cards object does not have an entry for the value name
@@ -1557,7 +1558,9 @@
       // set the total in the DOM
       document.getElementById('kit-total').innerHTML = `Kit Total: $${total.toFixed(2)}`;
     };
-
+    // ================================================
+    // REQUIRED LISTENERS FROM ABOVE, BUT FOR MOBILE
+    // ================================================
     document.getElementById("mobile-next").addEventListener("click", function () {
       if (currentStep === 1) {
         pbUpdateStorage('sqft', Number(totalSqFtInput.value));
@@ -1638,6 +1641,35 @@
       }
       if (currentStep === 4) step5();
     })
+    // ================================================
+    // GA4 EVENTS/STEPS
+    // ================================================
+    // project selection
+    document.querySelectorAll(".start-project").forEach(project => {
+      project.addEventListener("click", function (e) {
+        gtag('event', 'project_builder_start', {
+          "project": e.target.dataset.project
+        });
+      });
+    });
+    // add to cart
+    document.getElementById("atc").addEventListener("click", function (e) {
+      const requirements = {};
+      for (const [key, value] of Object.entries(cards)) {
+        const valueArr = Object.entries(value);
+        requirements[key] = valueArr.map(v => {
+          return {
+            sku: v[0],
+            quantity: v[1].qty
+          }
+        });
+      }
+      requirements['sqft'] = JSON.parse(localStorage.getItem("project-requirements"))['sqft'];
+
+      gtag('event', 'project_builder_start', {
+        "project_requirements": requirements
+      });
+    });
   })();
 </script>
 
