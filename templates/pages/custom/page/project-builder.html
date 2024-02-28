@@ -1091,8 +1091,8 @@
           sku: kitsRequired
         });
 
-        document.getElementById("temp1-next").style.position = "relative";
-        document.getElementById("temp1-next").style.bottom = 'unset';
+        document.getElementById("system-next").style.position = "relative";
+        document.getElementById("system-next").style.bottom = 'unset';
       } else {
         // update local storage
         pbUpdateStorage('project_system', {
@@ -1100,8 +1100,8 @@
           sku: ''
         });
 
-        document.getElementById("temp1-next").style.position = "sticky";
-        document.getElementById("temp1-next").style.bottom = 0;
+        document.getElementById("system-next").style.position = "sticky";
+        document.getElementById("system-next").style.bottom = 0;
       }
     }
 
@@ -1112,7 +1112,7 @@
     const projectUndercoat = document.querySelector("[name='undercoat_color']");
 
     // check for the height of step 3 when the previous steps "next" button is hit
-    document.getElementById("temp1-next").addEventListener("click", function () {
+    document.getElementById("system-next").addEventListener("click", function () {
       // wait for 100ms (1/10 of a second). If fired immediately, the window will not have loaded to verify the height
       setTimeout(() => {
         if (document.getElementById("stateAndUndercoat").scrollHeight > 700) {
