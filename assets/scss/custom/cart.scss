@@ -1,3 +1,13 @@
+.modal-content {
+  flex-direction: column !important;
+}
+
+.product-container  {
+  th {
+    background-color: #fff !important;
+  }
+}
+
 .cart-item-name .bundledFlag {
   color: red !important;
   font-size: 14px;
